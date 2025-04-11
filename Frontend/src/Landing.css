@@ -1,0 +1,177 @@
+/* Landing.css */
+.landing-container {
+    font-family: Arial, sans-serif;
+    color: #333;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  /* Hero Section */
+  .hero-section {
+    background-image: url('/src/assets/im1.jpeg'); /* Replace with your high-res image */
+    background-size: cover; /* Ensures the image covers the entire section */
+    background-position: center; /* Centers the image */
+    background-repeat: no-repeat; /* Prevents the image from repeating */
+    height: 600px; /* Adjust height as needed */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-align: center;
+    position: relative; /* For overlay positioning */
+  }
+  
+  /* Semi-transparent overlay for better text readability */
+  .hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5); /* Adjust opacity as needed */
+    z-index: 1;
+  }
+  
+  .hero-content {
+    position: relative; /* Ensures content is above the overlay */
+    z-index: 2; /* Brings content to the front */
+    max-width: 800px; /* Adjust width as needed */
+    padding: 20px;
+  }
+  
+  
+  .cta-button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .cta-button:hover {
+    background-color: #0056b3;
+  }
+  
+  .hero-image img {
+    max-width: 100%;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Features Section */
+  .features-section {
+    padding: 60px 0;
+    text-align: center;
+  }
+  
+  .features-section h2 {
+    font-size: 36px;
+    margin-bottom: 40px;
+  }
+  
+  .features-grid {
+    display: flex;
+    justify-content: space-around;
+    gap: 20px;
+  }
+  
+  .feature-card {
+    max-width: 300px;
+    text-align: center;
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #f8f9fa;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .feature-card img {
+    width: 100px;
+    margin-bottom: 20px;
+  }
+  
+  .feature-card h3 {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+  
+  .feature-card p {
+    font-size: 16px;
+    color: #666;
+  }
+  
+  /* App Showcase Section */
+  .app-showcase-section {
+    padding: 60px 0;
+    text-align: center;
+  }
+  
+  .app-showcase-section h2 {
+    font-size: 36px;
+    margin-bottom: 40px;
+  }
+  
+  .showcase-grid {
+    display: flex;
+    justify-content: space-around;
+    gap: 20px;
+  }
+  
+  .showcase-card {
+    max-width: 300px;
+    text-align: center;
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #f8f9fa;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .showcase-card img {
+    max-width: 100%;
+    border-radius: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .showcase-card h3 {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+  
+  .showcase-card p {
+    font-size: 16px;
+    color: #666;
+  }
+  
+  /* Call to Action Section */
+  .cta-section {
+    padding: 60px 0;
+    text-align: center;
+    background-color: #007bff;
+    color: white;
+    border-radius: 10px;
+    margin: 40px 0;
+  }
+  
+  .cta-section h2 {
+    font-size: 36px;
+    margin-bottom: 20px;
+  }
+  
+  .cta-section p {
+    font-size: 18px;
+    margin-bottom: 30px;
+  }
+  
+  .cta-section .cta-button {
+    background-color: white;
+    color: #007bff;
+    border: 2px solid #007bff;
+  }
+  
+  .cta-section .cta-button:hover {
+    background-color: #007bff;
+    color: white;
+  }
