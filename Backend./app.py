@@ -59,7 +59,7 @@ def create_app():
         r"/*": {
             "origins": [
                 "http://localhost:5173",  # for local dev
-                "https://tydehomefittingsandsanitarywares.vercel.app"  # for production
+                "https://tydehomefittingsandsanitarywares22.vercel.app"  # for production
             ],
             "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
             "allow_headers": ["Content-Type", "Authorization"],
