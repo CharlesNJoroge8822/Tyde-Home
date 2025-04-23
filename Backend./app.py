@@ -30,7 +30,7 @@ def create_app():
     app.config['DEBUG'] = os.environ.get('DEBUG', 'False') == 'True'
     
     # Database Config
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///app.db')
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://tydehomesandsanitarywares_user:wqphOTXX21u8xdyrN6nSZ2lgOrlSF4Tj@dpg-d04i0mruibrs73b470cg-a.oregon-postgres.render.com/tydehomesandsanitarywares'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     
     # JWT Config
