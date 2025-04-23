@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from app import db
 import jwt
 import datetime
@@ -7,7 +8,7 @@ from functools import wraps
 from models import User
 
 auth_bp = Blueprint('auth', __name__)
-
+# check
 # Configuration (you should move this to config.py)
 SECRET_KEY = "your-secret-key-here"  # Change this to a strong secret key in production
 
@@ -63,7 +64,7 @@ def register():
         token = jwt.encode({
             'user_id': new_user.id,
             'exp': datetime.datetime.utcnow() + datetime.timedelta(days=30)
-        }, SECRET_KEY)
+        }, SECRET_KEY).decode('utf-8')
         
         return jsonify({
             'message': 'User registered successfully!',
@@ -137,3 +138,39 @@ def update_profile(current_user):
     except Exception as e:
         db.session.rollback()
         return jsonify({'message': str(e)}), 500
+
+@auth_bp.route("/verify-token", methods=["GET"])
+@jwt_required()
+def verify_token():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+
+    if not user:
+        return jsonify({"valid": False}), 401
+
+    return jsonify({
+        "valid": True,
+        "user": {
+            "email": user.email,
+            "is_admin": user.is_admin
+        }
+    }), 200
+
+
+
+@auth_bp.route("/check", methods=["GET"])
+@jwt_required()
+def check_auth():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    user_data = {
+        "email": user.email,
+        "name": user.name,
+        "is_admin": user.is_admin
+    }
+
+    return jsonify({"user": user_data}), 200

@@ -133,15 +133,16 @@ class OrderItem(db.Model):
             "price_at_purchase": self.price_at_purchase,
             "product": self.product.to_dict()
         }
-
 class Order(db.Model):
     __tablename__ = "order"
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     total_amount = db.Column(db.Float, nullable=False)
-    status = db.Column(db.String(50), default="Pending")  # Pending, Processing, Shipped, Delivered, Cancelled
+    status = db.Column(db.String(50), default="pending")  # pending, processing, shipped, delivered, cancelled, returned
+    payment_status = db.Column(db.String(50), default="pending")  # pending, paid, failed, refunded
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     estimated_delivery = db.Column(db.DateTime, default=lambda: datetime.utcnow() + timedelta(days=3))
     
     user = db.relationship("User", back_populates="orders")
@@ -149,18 +150,19 @@ class Order(db.Model):
     delivery_updates = db.relationship("DeliveryUpdate", back_populates="order", lazy=True)
     deliveries = db.relationship("Delivery", back_populates="order", lazy=True)
 
-
     def to_dict(self):
         return {
             "id": self.id,
             "user_id": self.user_id,
             "total_amount": self.total_amount,
             "status": self.status,
+            "payment_status": self.payment_status,
             "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
             "estimated_delivery": self.estimated_delivery.isoformat() if self.estimated_delivery else None,
             "order_items": [item.to_dict() for item in self.order_items],
             "delivery_updates": [update.to_dict() for update in self.delivery_updates],
-            "user": self.user.to_dict()
+            "user": self.user.to_dict() if self.user else None
         }
 
 class DeliveryUpdate(db.Model):

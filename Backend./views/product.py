@@ -161,3 +161,15 @@ def get_related_products(product_id):
         
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+
+
+@product_bp.route('/categories', methods=['GET'])
+def get_categories():
+    try:
+        categories = db.session.query(Product.category).distinct().all()
+        categories = [c[0] for c in categories if c[0] is not None]  # Clean nulls
+        return jsonify(categories), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

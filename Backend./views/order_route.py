@@ -139,6 +139,7 @@ def get_user_orders(user_id):
     
 # Update Order Status
 @order_bp.route("/<int:order_id>/status", methods=["PATCH"])
+@jwt_required()
 def update_order_status(order_id):
     data = request.get_json()
     if "status" not in data:
@@ -146,7 +147,7 @@ def update_order_status(order_id):
     
     try:
         order = Order.query.get_or_404(order_id)
-        valid_statuses = ["pending", "processing", "shipped", "delivered", "cancelled"]
+        valid_statuses = ["pending", "processing", "shipped", "delivered", "cancelled", "returned"]
         
         if data["status"] not in valid_statuses:
             return error_response(
@@ -160,7 +161,7 @@ def update_order_status(order_id):
                 order_id=order.id,
                 status=data["status"],
                 notes=data.get("notes", ""),
-                updated_by=data.get("admin_id", 1)
+                updated_by=get_jwt_identity()
             )
             db.session.add(delivery_update)
         
@@ -175,6 +176,39 @@ def update_order_status(order_id):
     except Exception as e:
         db.session.rollback()
         return error_response(str(e), 500)
+
+# !payment status
+# Update Payment Status (Admin only)
+@order_bp.route("/<int:order_id>/payment-status", methods=["PATCH"])
+@jwt_required()
+def update_payment_status(order_id):
+    data = request.get_json()
+    if "payment_status" not in data:
+        return error_response("Payment status field is required", 400)
+    
+    try:
+        order = Order.query.get_or_404(order_id)
+        valid_statuses = ["pending", "paid", "failed", "refunded"]
+        
+        if data["payment_status"] not in valid_statuses:
+            return error_response(
+                "Invalid payment status",
+                400,
+                valid_statuses=valid_statuses
+            )
+        
+        order.payment_status = data["payment_status"]
+        db.session.commit()
+        
+        return jsonify({
+            "message": "Payment status updated",
+            "order": order.to_dict()
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return error_response(str(e), 500)
+
 
 # Cancel Order
 @order_bp.route("/<int:order_id>/cancel", methods=["POST"])
@@ -208,6 +242,7 @@ def cancel_order(order_id):
 
 # Get All Orders (with filtering)
 @order_bp.route("/", methods=["GET"])
+@jwt_required()
 def get_all_orders():
     try:
         query = Order.query.options(
@@ -221,6 +256,8 @@ def get_all_orders():
             query = query.filter(Order.id == order_id)
         if status := request.args.get("status"):
             query = query.filter_by(status=status)
+        if payment_status := request.args.get("payment_status"):
+            query = query.filter_by(payment_status=payment_status)
         if user_id := request.args.get("user_id"):
             query = query.filter_by(user_id=user_id)
         if date_from := request.args.get("date_from"):
@@ -244,7 +281,9 @@ def get_all_orders():
                 },
                 "total_amount": float(order.total_amount) if order.total_amount else 0.0,
                 "status": order.status,
+                "payment_status": order.payment_status,
                 "created_at": order.created_at.isoformat() if order.created_at else None,
+                "updated_at": order.updated_at.isoformat() if order.updated_at else None,
                 "order_items_count": len(order.order_items)
             }
             
@@ -274,6 +313,7 @@ def get_current_user_orders():
             order_data = {
                 "id": order.id,
                 "status": order.status,
+                "payment_status": order.payment_status,
                 "total_amount": float(order.total_amount) if order.total_amount else 0.0,
                 "created_at": order.created_at.isoformat() if order.created_at else None,
                 "estimated_delivery": order.estimated_delivery.isoformat() if order.estimated_delivery else None,
@@ -321,15 +361,39 @@ def get_current_user_orders():
 
     # admin enpoint to fetch each user orders
 @order_bp.route("/admin-orders", methods=["GET"])
+@jwt_required()
 def get_all_orders_for_admin():
     try:
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 10, type=int)
+        status = request.args.get('status', None)
+        payment_status = request.args.get('payment_status', None)
+        search = request.args.get('search', None)
 
-        # Query with joined user data
-        orders = Order.query.options(db.joinedload(Order.user))\
-            .order_by(Order.created_at.desc())\
-            .paginate(page=page, per_page=per_page, error_out=False)
+        # Base query
+        query = Order.query.options(
+            db.joinedload(Order.user),
+            db.joinedload(Order.order_items).joinedload(OrderItem.product),
+            db.joinedload(Order.delivery_updates)
+        )
+
+        # Apply filters
+        if status and status != 'all':
+            query = query.filter(Order.status == status)
+        if payment_status and payment_status != 'all':
+            query = query.filter(Order.payment_status == payment_status)
+        if search:
+            query = query.join(Order.user).filter(
+                db.or_(
+                    Order.id.ilike(f'%{search}%'),
+                    Order.user.name.ilike(f'%{search}%'),
+                    Order.user.email.ilike(f'%{search}%'),
+                    Order.user.phone.ilike(f'%{search}%')
+
+                )
+            )
+
+        orders = query.order_by(Order.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
 
         orders_data = []
         for order in orders.items:
@@ -338,13 +402,17 @@ def get_all_orders_for_admin():
             order_data = {
                 "id": order.id,
                 "status": order.status,
+                "payment_status": order.payment_status,
                 "total_amount": float(order.total_amount) if order.total_amount else 0.0,
                 "created_at": order.created_at.isoformat() if order.created_at else None,
+                "updated_at": order.updated_at.isoformat() if order.updated_at else None,
                 "estimated_delivery": order.estimated_delivery.isoformat() if order.estimated_delivery else None,
                 "user": {
                     "id": user.id if user else None,
                     "name": getattr(user, 'name', 'Unknown Customer'),
-                    "email": getattr(user, 'email', None)
+                    "email": getattr(user, 'email', None),
+                    "phone": getattr(user, 'phone', None)
+
                 },
                 "order_items": [],
                 "delivery_updates": []
@@ -408,7 +476,9 @@ def get_single_order(order_id):
             "user": {
                 "id": order.user.id if order.user else None,
                 "name": getattr(order.user, 'name', 'Unknown Customer'),
-                "email": getattr(order.user, 'email', None)
+                "email": getattr(order.user, 'email', None),
+                "phone": getattr(order.user, 'phone', None)
+
             },
             "total_amount": float(order.total_amount) if order.total_amount else 0.0,
             "status": order.status,
