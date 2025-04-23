@@ -11,6 +11,7 @@ export const UserProvider = ({ children }) => {
 
     // Create User Function (Like Flask `create_user`)
     const createUser = async (userData) => {
+        console.log("Payload", JSON.stringify(userData, null, 3));
         try {
             // Send POST request to Flask backend
             const resp = await fetch("http://127.0.0.1:5000/register", {

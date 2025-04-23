@@ -1,191 +1,7 @@
-// import React, { useState, useEffect } from "react";
-// import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-
-// // Admin Pages
-// import Adminsettings from "./pages/admin/a-settings";
-// import ManageProducts from "./pages/admin/manageproducts";
-// import ManageUsers from "./pages/admin/manageusers";
-// import DirectMsgs from "./pages/admin/directMsgs";
-// import AdsPage from "./pages/admin/AdsPage";
-// import DeliveriesPage from "./pages/admin/DeliveriesPage";
-
-// // Client Pages
-// import Items from "./pages/client/items";
-// import MyOrders from "./pages/client/myOrders";
-// import MessagePage from "./pages/client/messaging";
-
-// // Public Pages
-// import Register from "./pages/public/register";
-// import Login from "./pages/public/login";
-// import Landing from "./pages/public/landing";
-
-// import Footer from "./components/footer";
-
-// const Navbar = ({ logout }) => {
-//   const [currentSlide, setCurrentSlide] = useState(0);
-  
-//   const slideshowImages = [
-//     'https://images.unsplash.com/photo-1600585152220-90363fe7e115?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-//     'https://images.unsplash.com/photo-1600121848594-d8644e57abab?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-//     'https://images.unsplash.com/photo-1600566752355-35792bedcfe3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
-//   ];
-
-//   useEffect(() => {
-//     const interval = setInterval(() => {
-//       setCurrentSlide((prev) => (prev + 1) % slideshowImages.length);
-//     }, 5000);
-//     return () => clearInterval(interval);
-//   }, []);
-
-//   return (
-//     <nav className="sticky top-0 z-50 w-full">
- 
-
-//       {/* Main Navbar Content */}
-//       <div className="bg-blue-800/95 text-white shadow-xl w-full border-b-4 border-amber-600">
-//         <div className="container mx-auto px-6">
-//           {/* Top Row - Branding */}
-//           <div className="flex justify-between items-center py-4">
-//             <h2 className="text-4xl font-serif font-bold text-amber-100 tracking-wider hover:text-amber-300 transition-all duration-300">
-//               <span className="text-5xl">T</span>yde Home Fittings & Sanitary Wares
-//             </h2>
-            
-//             <div className="flex items-center space-x-2">
-//               <Link 
-//                 to="/login" 
-//                 className="px-4 py-2 bg-blue-700 hover:bg-blue-600 rounded-lg font-medium transition-all duration-300 border border-blue-600 hover:border-amber-400"
-//               >
-//                 Login
-//               </Link>
-//               <button 
-//                 onClick={logout}
-//                 className="px-4 py-2 bg-amber-700 hover:bg-amber-600 text-white rounded-lg font-medium transition-all duration-300 border border-amber-600 hover:border-white"
-//               >
-//                 Logout
-//               </button>
-//             </div>
-//           </div>
-
-//           {/* Bottom Row - Navigation */}
-//           <div className="flex justify-between items-center py-3 border-t border-blue-700/50">
-//             {/* Admin Links */}
-//             <div className="flex space-x-6">
-//               <Link to="/admin/ads" className="text-blue-100 hover:text-amber-300 transition-all duration-300 font-medium flex items-center">
-//                 <span className="mr-1">📢</span> Ads
-//               </Link>
-//               <Link to="/admin/deliveries" className="text-blue-100 hover:text-amber-300 transition-all duration-300 font-medium flex items-center">
-//                 <span className="mr-1">🚚</span> Deliveries
-//               </Link>
-//               <Link to="/admin/manage-users" className="text-blue-100 hover:text-amber-300 transition-all duration-300 font-medium flex items-center">
-//                 <span className="mr-1">👥</span> Users
-//               </Link>
-//               <Link to="/admin/manage-products" className="text-blue-100 hover:text-amber-300 transition-all duration-300 font-medium flex items-center">
-//                 <span className="mr-1">🛍️</span> Products
-//               </Link>
-//               <Link to="/admin/inbox" className="text-blue-100 hover:text-amber-300 transition-all duration-300 font-medium flex items-center">
-//                 <span className="mr-1">✉️</span> Inbox
-//               </Link>
-//             </div>
-
-            
-
-//             {/* Client Links */}
-//             <div className="flex space-x-6">
-//               <Link to="/client/items" className="text-blue-100 hover:text-amber-300 transition-all duration-300 font-medium flex items-center">
-//                 <span className="mr-1">🏠</span> Showroom
-//               </Link>
-//               <Link to="/client/my-orders" className="text-blue-100 hover:text-amber-300 transition-all duration-300 font-medium flex items-center">
-//                 <span className="mr-1">📦</span> My Orders
-//               </Link>
-//               <Link to="/client/messages" className="text-blue-100 hover:text-amber-300 transition-all duration-300 font-medium flex items-center">
-//                 <span className="mr-1">💬</span> Messages
-//               </Link>
-//             </div>
-
-            
-//           </div>
-//         </div>
-//       </div>
-
-//       <div>
-
-//                      {/* Slideshow Background */}
-//       {/* <div className="relative h-48 overflow-hidden bg-blue-900">
-//         {slideshowImages.map((img, index) => (
-//           <div 
-//             key={index}
-//             className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${index === currentSlide ? 'opacity-40' : 'opacity-0'}`}
-//             style={{ backgroundImage: `url(${img})` }}
-//           />
-//         ))}
-//         <div className="absolute inset-0 bg-blue-900/70"></div>
-//       </div> */}
-//       </div>
-//     </nav>
-//   );
-// };
-
-// const App = () => {
-//   const logout = () => {
-//     console.log("Logout clicked");
-//     window.location.href = '/';
-//   };
-
-//   return (
-//     <Router>
-//       <div id="root">
-//         <Navbar logout={logout} />
-        
-//         <div className="main-content container mx-auto mt-6 p-4">
-//           <Routes>
-//             {/* Public routes */}
-//             <Route path="/" element={<Landing />} />
-//             <Route path="/login" element={<Login />} />
-//             <Route path="/register" element={<Register />} />
-
-//             {/* Client routes */}
-//             <Route path="/client/items" element={<Items />} />
-//             <Route path="/client/my-orders" element={<MyOrders />} />
-//             <Route path="/client/messages" element={<MessagePage />} />
-
-//             {/* Admin routes */}
-//             <Route path="/admin/deliveries" element={<DeliveriesPage />} />
-//             <Route path="/admin/ads" element={<AdsPage />} />
-//             <Route path="/admin/manage-users" element={<ManageUsers />} />
-//             <Route path="/admin/manage-products" element={<ManageProducts />} />
-//             <Route path="/admin/settings" element={<Adminsettings />} />
-//             <Route path="/admin/inbox" element={<DirectMsgs />} />
-
-//             {/* Catch-all route */}
-//             <Route path="*" element={<Landing />} />
-//           </Routes>
-//         </div>
-
-//         <Footer />
-//       </div>
-//     </Router>
-//   );
-// };
-
-// export default App;
-
-
-
-
-// Tyde Home Fittings & Sanitary Wares
-
-
-
-
-
-
-
-
-
-
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Link, Navigate, useNavigate } from "react-router-dom";
-import { FaHome, FaBox, FaUsers, FaTruck, FaAd, FaEnvelope, FaSignInAlt, FaUserPlus, FaSignOutAlt, FaJediOrder, FaFacebook } from "react-icons/fa";
+import { BrowserRouter as Router, Routes, Route, Link, Navigate, useNavigate, NavLink } from "react-router-dom";
+import { FaHome, FaBox, FaUsers, FaTruck, FaAd, FaEnvelope, FaSignInAlt, FaUserPlus, FaSignOutAlt, FaShoppingCart, FaUserCircle, FaScroll, FaBars, FaTimes } from "react-icons/fa";
+import axios from "axios";
 
 // Admin Pages
 import ManageProducts from "./pages/admin/manageproducts";
@@ -212,243 +28,286 @@ const isAuthenticated = () => !!localStorage.getItem('token');
 const isAdmin = () => localStorage.getItem('role') === 'admin';
 
 const AccessDenied = () => {
+  const navigate = useNavigate();
+  
   useEffect(() => {
     const timer = setTimeout(() => {
-      window.location.href = isAdmin() ? '/admin/manage-products' : '/client/items';
+      navigate(isAdmin() ? '/admin/manage-products' : '/client/items');
     }, 100);
     return () => clearTimeout(timer);
-  }, []);
+  }, [navigate]);
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-blue-50">
-      <h1 className="text-3xl font-bold text-blue-800 font-serif">Redirecting...</h1>
+      <h1 className="text-3xl font-bold text-blue-800 font-sans">Redirecting...</h1>
     </div>
   );
 };
 
 const AdminRoute = ({ children }) => {
-  const [verified, setVerified] = useState(false);
-
-  useEffect(() => {
-    if (!isAuthenticated()) {
-      window.location.href = '/login';
-      return;
-    }
-    if (!isAdmin()) {
-      window.location.href = '/client/items';
-      return;
-    }
-    setVerified(true);
-  }, []);
-
-  return verified ? children : null;
+  if (!isAuthenticated()) {
+    return <Navigate to="/login" replace />;
+  }
+  if (!isAdmin()) {
+    return <Navigate to="/client/items" replace />;
+  }
+  return children;
 };
 
 const ClientRoute = ({ children }) => {
-  const [verified, setVerified] = useState(false);
-
-  useEffect(() => {
-    if (!isAuthenticated()) {
-      window.location.href = '/login';
-      return;
-    }
-    if (isAdmin()) {
-      window.location.href = '/admin/manage-products';
-      return;
-    }
-    setVerified(true);
-  }, []);
-
-  return verified ? children : null;
+  if (!isAuthenticated()) {
+    return <Navigate to="/login" replace />;
+  }
+  if (isAdmin()) {
+    return <Navigate to="/admin/manage-products" replace />;
+  }
+  return children;
 };
+
+const NavLinkItem = ({ to, icon, text }) => (
+  <NavLink
+    to={to}
+    className={({ isActive }) => 
+      `flex items-center px-4 py-3 rounded-lg transition-all duration-300 group ${
+        isActive ? 'bg-blue-600 text-white shadow-lg' : 'text-blue-100 hover:bg-blue-700 hover:text-white'
+      }`
+    }
+  >
+    {React.cloneElement(icon, { className: "mr-3 text-lg" })}
+    <span className="font-medium">{text}</span>
+  </NavLink>
+);
 
 const App = () => {
   const [loading, setLoading] = useState(true);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [user, setUser] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
 
+  const NAV_SLIDES = [
+    'Crafted Elegance in Every Drop ✦',
+    'Summer Sale – 20% Off All Bath Collections ✦',
+    'Free Delivery on Orders Over $50 ✦',
+    'Premium Quality Since 1892 ✦',
+  ];
+
+
+  const verifyAuth = async () => {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await axios.get('http://127.0.0.1:5000/verify-token', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      localStorage.setItem('role', response.data.user.is_admin ? 'admin' : 'client');
+      localStorage.setItem('email', response.data.user.email);
+      setUser({
+        email: response.data.user.email,
+        isAdmin: response.data.user.is_admin
+      });
+    } catch (err) {
+      localStorage.clear();
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const verifyAuth = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        // Verify token with backend
-        const response = await axios.get('/api/verify-token', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        localStorage.setItem('role', response.data.user.is_admin ? 'admin' : 'client');
-        
-        const currentPath = window.location.pathname;
-        if (response.data.user.is_admin && !currentPath.startsWith('/admin')) {
-          window.location.href = '/admin/manage-products';
-        } else if (!response.data.user.is_admin && !currentPath.startsWith('/client')) {
-          window.location.href = '/client/items';
-        }
-      } catch (err) {
-        localStorage.clear();
-        window.location.href = '/login';
-      } finally {
-        setLoading(false);
-      }
-    };
-
     verifyAuth();
   }, []);
 
   const logout = () => {
     localStorage.clear();
-    window.location.href = '/login';
+    setUser(null);
+    navigate('/login');
+  };
+
+  const toggleMobileMenu = () => setMobileMenuOpen(prev => !prev);
+
+  const renderLinks = () => {
+    if (isAuthenticated()) {
+      if (isAdmin()) {
+        return (
+          <>
+            <NavLinkItem to="/admin/manage-products" icon={<FaBox />} text="Products" />
+            <NavLinkItem to="/admin/manage-users" icon={<FaUsers />} text="Users" />
+            <NavLinkItem to="/admin/deliveries" icon={<FaTruck />} text="Deliveries" />
+            <NavLinkItem to="/admin/ads" icon={<FaAd />} text="Ads" />
+            <NavLinkItem to="/admin/orders" icon={<FaScroll />} text="Orders" />
+            <NavLinkItem to="/admin/directMsgs" icon={<FaEnvelope />} text="Messages" />
+          </>
+        );
+      } else {
+        return (
+          <>
+            <NavLinkItem to="/client/items" icon={<FaBox />} text="Shop" />
+            <NavLinkItem to="/client/my-orders" icon={<FaShoppingCart />} text="My Orders" />
+            <NavLinkItem to="/client/messages" icon={<FaEnvelope />} text="Messages" />
+            <NavLinkItem to="/client/profile" icon={<FaUserCircle />} text="Profile" />
+          </>
+        );
+      }
+    } else {
+      return (
+        <NavLinkItem to="/" icon={<FaHome />} text="Home" />
+      );
+    }
   };
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen bg-blue-50">
-        <div className="text-blue-800 text-xl font-serif">Loading...</div>
+        <div className="text-blue-800 text-xl font-sans">Loading...</div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen flex flex-col bg-blue-50">
-      {/* Antique-style navigation */}
-      <nav
-  className="relative bg-blue-900/50 backdrop-blur-md text-white shadow-lg border-b-4 border-blue-700 sticky top-0 z-50"
-  style={{
-    backgroundImage: "url('/public/navbg.jpg')",
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundRepeat: 'repeat',
-  }}
->        <div className="container mx-auto px-4 py-8">
-          <div className="flex justify-between items-center">
-            {/* Logo */}
-            <Link to="/" className="flex items-center space-x-2">
-              <span className="text-3xl font-bold text-blue-300 font-serif">TYDE</span>
-              <span className="text-xl text-white italic">Home & Sanitary</span>
-            </Link>
+      {/* Navigation */}
+      <nav className="relative w-[90%] mx-auto bg-gradient-to-r from-blue-400 via-blue-900 to-blue-400 text-white shadow-2xl sticky top-0 z-50 font-sans ">
+      <div className="container mx-auto px-6 py-6">
+        <div className="flex justify-between items-center">
+          {/* Logo */}
+    <Link to="/" className="flex items-center space-x-3 group transform hover:scale-110 transition-transform duration-500">
+      <span className="text-5xl md:text-6xl font-extrabold text-white hover:text-blue-600 transition-all duration-300 tracking-tight drop-shadow-2xl">
+        TYDE
+      </span>
+      <span className="text-lg md:text-xl text-blue-100 italic font-light hidden md:block bg-blue-700/50 px-3 py-1 rounded-lg group-hover:bg-blue-800/70 transition-all duration-500">
+        Homes & Sanitary Wares
+      </span>
+    </Link>
 
-            {/* Navigation Links */}
-            <div className="hidden md:flex items-center space-x-6">
-              <Link 
-                to="/" 
-                className="flex items-center px-3 py-2 text-blue-100 hover:text-white transition-colors"
-              >
-                <FaHome className="mr-2" /> Home
-              </Link>
-
-              {isAuthenticated() ? (
-                isAdmin() ? (
-                  <>
-                    <Link 
-                      to="/admin/manage-products" 
-                      className="flex items-center px-3 py-2 text-blue-100 hover:text-white transition-colors"
-                    >
-                      <FaBox className="mr-2" /> Products
-                    </Link>
-                    <Link 
-                      to="/admin/manage-users" 
-                      className="flex items-center px-3 py-2 text-blue-100 hover:text-white transition-colors"
-                    >
-                      <FaUsers className="mr-2" /> Users
-                    </Link>
-                    <Link 
-                      to="/admin/deliveries" 
-                      className="flex items-center px-3 py-2 text-blue-100 hover:text-white transition-colors"
-                    >
-                      <FaTruck className="mr-2" /> Deliveries
-                    </Link>
-                    <Link 
-                      to="/admin/ads" 
-                      className="flex items-center px-3 py-2 text-blue-100 hover:text-white transition-colors"
-                    >
-                      <FaAd className="mr-2" /> Ads
-                    </Link>
-                    <Link 
-                      to="/admin/orders" 
-                      className="flex items-center px-3 py-2 text-blue-100 hover:text-white transition-colors"
-                    >
-                      <FaAd className="mr-2" /> Orders
-                    </Link>
-                    <Link 
-                      to="/admin/directMsgs" 
-                      className="flex items-center px-3 py-2 text-blue-100 hover:text-white transition-colors"
-                    >
-                      <FaEnvelope className="mr-2" /> Messages
-                    </Link>
-                  </>
-                ) : (
-                  <>
-                    <Link 
-                      to="/client/items" 
-                      className="flex items-center px-3 py-2 text-blue-100 hover:text-white transition-colors"
-                    >
-                      <FaBox className="mr-2" /> Products
-                    </Link>
-                    <Link 
-                      to="/client/my-orders" 
-                      className="flex items-center px-3 py-2 text-blue-100 hover:text-white transition-colors"
-                    >
-                      <FaTruck className="mr-2" /> My Orders
-                    </Link>
-                    <Link 
-                      to="/client/messages" 
-                      className="flex items-center px-3 py-2 text-blue-100 hover:text-white transition-colors"
-                    >
-                      <FaEnvelope className="mr-2" /> Messages
-                    </Link>
-
-                    <Link 
-                      to="/client/profile" 
-                      className="flex items-center px-3 py-2 text-blue-100 hover:text-white transition-colors"
-                    >
-                      <FaFacebook className="mr-2" /> Profile
-                    </Link>
-                  </>
-                )
-              ) : null}
-            </div>
-
-            {/* Auth Buttons */}
-            <div className="flex items-center space-x-4">
-              {isAuthenticated() ? (
-                <button 
-                  onClick={logout}
-                  className="flex items-center px-4 py-2 bg-blue-700 hover:bg-blue-600 rounded transition-colors"
-                >
-                  <FaSignOutAlt className="mr-2" /> Logout
-                </button>
-              ) : (
-                <>
-                  <Link 
-                    to="/login" 
-                    className="flex items-center px-4 py-2 bg-blue-700 hover:bg-blue-600 rounded transition-colors"
-                  >
-                    <FaSignInAlt className="mr-2" /> Login
-                  </Link>
-                  <Link 
-                    to="/register" 
-                    className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded transition-colors"
-                  >
-                    <FaUserPlus className="mr-2" /> Register
-                  </Link>
-                </>
-              )}
-            </div>
+          {/* Crafted */}
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex items-center space-x-4">
+            {renderLinks()}
           </div>
+          {/* Premium */}
+          {/* Auth Buttons Desktop */}
+          <div className="hidden lg:flex items-center space-x-3">
+            {isAuthenticated() ? (
+              <button 
+                onClick={logout}
+                className="flex items-center px-4 py-2 bg-blue-800 hover:bg-blue-900 rounded-lg transition-all duration-300 shadow hover:shadow-xl group"
+              >
+                <FaSignOutAlt className="mr-2 text-lg group-hover:rotate-180 transition-transform duration-500" />
+                <span className="font-medium">Logout</span>
+              </button>
+            ) : (
+              <>
+                <Link 
+                  to="/login" 
+                  className="flex items-center px-4 py-2 bg-blue-800 hover:bg-blue-900 rounded-lg transition-all duration-300 shadow hover:shadow-lg"
+                >
+                  <FaSignInAlt className="mr-2" />
+                  <span className="font-medium">Login</span>
+                </Link>
+                <Link 
+                  to="/register" 
+                  className="flex items-center px-4 py-2 bg-sky-600 hover:bg-sky-700 rounded-lg transition-all duration-300 shadow hover:shadow-lg"
+                >
+                  <FaUserPlus className="mr-2" />
+                  <span className="font-medium">Register</span>
+                </Link>
+              </>
+            )}
+          </div>
+
+          {/* Mobile Menu Toggle */}
+          <button 
+            onClick={toggleMobileMenu}
+            className="lg:hidden text-3xl text-white focus:outline-none"
+          >
+            {mobileMenuOpen ? <FaTimes /> : <FaBars />}
+          </button>
         </div>
-      </nav>
+
+        {/* Slide Caption Banner */}
+        <div className="mt-6 text-center rounded-md px-6 py-3 text-sm md:text-base font-medium text-blue-100 tracking-wide italic transition-all duration-700 ease-in-out min-h-[40px] flex items-center justify-center">
+          <span className="animate-fade">{NAV_SLIDES[currentSlide]}</span>
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      <div className={`lg:hidden bg-blue-700 transition-all duration-300 overflow-hidden ${
+        mobileMenuOpen ? 'max-h-screen py-4' : 'max-h-0 py-0'
+      }`}>
+        <div className="container mx-auto px-6 space-y-3">
+          {renderLinks()}
+          {isAuthenticated() ? (
+            <button 
+              onClick={() => {
+                logout();
+                setMobileMenuOpen(false);
+              }}
+              className="w-full flex items-center justify-center px-4 py-2 bg-blue-800 hover:bg-blue-900 rounded-lg"
+            >
+              <FaSignOutAlt className="mr-2" /> Logout
+            </button>
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              <Link 
+                to="/login" 
+                className="flex items-center justify-center px-4 py-2 bg-blue-800 hover:bg-blue-900 rounded-lg"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <FaSignInAlt className="mr-2" /> Login
+              </Link>
+              <Link 
+                to="/register" 
+                className="flex items-center justify-center px-4 py-2 bg-sky-800 hover:bg-sky-700 rounded-lg"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <FaUserPlus className="mr-2" /> Register
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Promo Marquee */}
+      <div className="bg-gradient-to-r from-transparent via-blue-900 to-transparent overflow-hidden mt-2 rounded-2xl">
+  <div className="py-2">
+    <div className="animate-marquee whitespace-nowrap text-blue-100 text-sm font-semibold italic text-center mx-auto">
+      <span className="mx-8">✦ Premium Quality... ✦</span>
+      <span className="mx-8">Free Delivery on Orders Over $50 ✦</span>
+      <span className="mx-8">Summer Sale - 20% Off All Bath Collections ✦</span>
+    </div>
+  </div>
+</div>
+
+    </nav>
 
       {/* Main Content */}
       <main className="flex-grow container mx-auto px-4 py-8">
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<Landing />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route 
+            path="/login" 
+            element={isAuthenticated() ? 
+              (isAdmin() ? 
+                <Navigate to="/admin/manage-products" replace /> : 
+                <Navigate to="/client/items" replace />) : 
+              <Login setUser={setUser} verifyAuth={verifyAuth} />} 
+          />
+          <Route 
+            path="/register" 
+            element={isAuthenticated() ? 
+              (isAdmin() ? 
+                <Navigate to="/admin/manage-products" replace /> : 
+                <Navigate to="/client/items" replace />) : 
+              <Register />} 
+          />
           <Route path="/access-denied" element={<AccessDenied />} />
 
           {/* Admin routes */}
@@ -466,8 +325,6 @@ const App = () => {
           <Route path="/client/messages" element={<ClientRoute><MessagePage /></ClientRoute>} />
           <Route path="/client/profile" element={<ClientRoute><Profile /></ClientRoute>} />
           <Route path="/client" element={<ClientRoute><Navigate to="/client/items" replace /></ClientRoute>} />
-          {/* <Route path="/client/profile" element={<ClientRoute><Navigate to="/client/profile" eplace /></ClientRoute>} /> */}
-
 
           {/* Catch-all route */}
           <Route path="*" element={<Navigate to="/" replace />} />

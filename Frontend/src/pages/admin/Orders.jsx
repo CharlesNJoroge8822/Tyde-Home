@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   FiPackage, FiTruck, FiCheckCircle, FiClock, 
-  FiXCircle, FiChevronDown, FiChevronUp,FiChevronLeft, FiChevronRight,
-  FiInfo, FiPhone, FiMapPin, FiCalendar, FiUser, FiMail, FiRefreshCw
+  FiXCircle, FiChevronDown, FiChevronUp, FiChevronLeft, FiChevronRight,
+  FiInfo, FiPhone, FiMapPin, FiCalendar, FiUser, FiMail, FiRefreshCw, FiFilter, FiDollarSign
 } from 'react-icons/fi';
-import { FaBoxOpen, FaShippingFast, FaSearch } from 'react-icons/fa';
+import { FaBoxOpen, FaShippingFast, FaSearch, FaRegCreditCard } from 'react-icons/fa';
+import { BsBoxSeam } from 'react-icons/bs';
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -17,99 +18,123 @@ const Orders = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [loadingDeliveries, setLoadingDeliveries] = useState({});
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [paymentFilter, setPaymentFilter] = useState('all');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const fetchOrders = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const params = new URLSearchParams({
+        page: currentPage,
+        ...(statusFilter !== 'all' && { status: statusFilter }),
+        ...(paymentFilter !== 'all' && { payment_status: paymentFilter }),
+        ...(searchQuery && { search: searchQuery })
+      });
+
+      const response = await fetch(
+        `http://127.0.0.1:5000/orders/admin-orders?${params.toString()}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch orders');
+      }
+      
+      const ordersData = await response.json();
+      setOrders(ordersData.orders);
+      setTotalPages(ordersData.pagination.pages);
+      setTotalOrders(ordersData.pagination.total);
+// OrderCard
+      const initialDeliveryLoading = {};
+      ordersData.orders.forEach(order => {
+        initialDeliveryLoading[order.id] = true;
+      });
+      setLoadingDeliveries(initialDeliveryLoading);
+      
+      // Fetch delivery status for each order
+      ordersData.orders.forEach(async (order) => {
+        try {
+          const deliveryResponse = await fetch(
+            `http://127.0.0.1:5000/api/deliveries/order/${order.id}/status`,
+            {
+              headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+              }
+            }
+          );
+          
+          if (!deliveryResponse.ok) {
+            throw new Error(`Failed to fetch delivery status for order ${order.id}`);
+          }
+          
+          const deliveryStatus = await deliveryResponse.json();
+          
+          setDeliveryData(prev => ({
+            ...prev,
+            [order.id]: deliveryStatus
+          }));
+        } catch (err) {
+          console.error(err);
+          setDeliveryData(prev => ({
+            ...prev,
+            [order.id]: {
+              error: err.message,
+              order_status: order.status
+            }
+          }));
+        } finally {
+          setLoadingDeliveries(prev => ({
+            ...prev,
+            [order.id]: false
+          }));
+        }
+      });
+    } catch (err) {
+      console.error("Fetch error:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+      setIsRefreshing(false);
+    }
+  }, [currentPage, statusFilter, searchQuery, paymentFilter]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // Build query parameters
-        const params = new URLSearchParams({
-          page: currentPage,
-          ...(statusFilter !== 'all' && { status: statusFilter }),
-          ...(searchQuery && { search: searchQuery })
-        });
-
-        // Fetch orders
-        const ordersResponse = await fetch(
-          `http://127.0.0.1:5000/orders/admin-orders?${params.toString()}`
-        );
-        
-        if (!ordersResponse.ok) {
-          const errorData = await ordersResponse.json();
-          throw new Error(errorData.error || 'Failed to fetch orders');
-        }
-        
-        const ordersData = await ordersResponse.json();
-        setOrders(ordersData.orders);
-        setTotalPages(ordersData.pagination.pages);
-        
-        // Initialize delivery data loading states
-        const initialDeliveryLoading = {};
-        ordersData.orders.forEach(order => {
-          initialDeliveryLoading[order.id] = true;
-        });
-        setLoadingDeliveries(initialDeliveryLoading);
-        
-        // Fetch delivery status for each order
-        ordersData.orders.forEach(async (order) => {
-          try {
-            const deliveryResponse = await fetch(
-              `http://127.0.0.1:5000/api/deliveries/order/${order.id}/status`
-            );
-            
-            if (!deliveryResponse.ok) {
-              throw new Error(`Failed to fetch delivery status for order ${order.id}`);
-            }
-            
-            const deliveryStatus = await deliveryResponse.json();
-            
-            setDeliveryData(prev => ({
-              ...prev,
-              [order.id]: deliveryStatus
-            }));
-          } catch (err) {
-            console.error(err);
-            setDeliveryData(prev => ({
-              ...prev,
-              [order.id]: {
-                error: err.message,
-                order_status: order.status
-              }
-            }));
-          } finally {
-            setLoadingDeliveries(prev => ({
-              ...prev,
-              [order.id]: false
-            }));
-          }
-        });
-      } catch (err) {
-        console.error("Fetch error:", err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    // Add debounce to search
     const debounceTimer = setTimeout(() => {
-      fetchData();
-    }, 300);
+      fetchOrders();
+    }, 500);
 
     return () => clearTimeout(debounceTimer);
-  }, [currentPage, statusFilter, searchQuery]);
-
-  const toggleOrderExpand = (orderId) => {
-    setExpandedOrder(expandedOrder === orderId ? null : orderId);
-  };
+  }, [fetchOrders]);
 
   const refreshData = () => {
+    setIsRefreshing(true);
+    setCurrentPage(1);
+    fetchOrders();
+  };
+
+  const resetFilters = () => {
+    setIsRefreshing(true);
     setCurrentPage(1);
     setSearchQuery('');
     setStatusFilter('all');
+    setPaymentFilter('all');
   };
+
+  const handlePaymentStatusUpdate = useCallback((orderId, newStatus) => {
+    setOrders(prevOrders => 
+      prevOrders.map(order => 
+        order.id === orderId ? { ...order, payment_status: newStatus } : order
+      )
+    );
+  }, []);
 
   const getStatusIcon = (status) => {
     const icons = {
@@ -118,7 +143,8 @@ const Orders = () => {
       'shipped': <FiTruck className="text-indigo-500" />,
       'in transit': <FaShippingFast className="text-purple-500" />,
       'delivered': <FiCheckCircle className="text-green-500" />,
-      'cancelled': <FiXCircle className="text-red-500" />
+      'cancelled': <FiXCircle className="text-red-500" />,
+      'returned': <BsBoxSeam className="text-orange-500" />
     };
     return icons[status.toLowerCase()] || <FaBoxOpen className="text-gray-500" />;
   };
@@ -130,7 +156,18 @@ const Orders = () => {
       'shipped': 'bg-indigo-100 text-indigo-800',
       'in transit': 'bg-purple-100 text-purple-800',
       'delivered': 'bg-green-100 text-green-800',
-      'cancelled': 'bg-red-100 text-red-800'
+      'cancelled': 'bg-red-100 text-red-800',
+      'returned': 'bg-orange-100 text-orange-800'
+    };
+    return colors[status.toLowerCase()] || 'bg-gray-100 text-gray-800';
+  };
+
+  const getPaymentStatusColor = (status) => {
+    const colors = {
+      'paid': 'bg-green-100 text-green-800',
+      'pending': 'bg-yellow-100 text-yellow-800',
+      'failed': 'bg-red-100 text-red-800',
+      'refunded': 'bg-blue-100 text-blue-800'
     };
     return colors[status.toLowerCase()] || 'bg-gray-100 text-gray-800';
   };
@@ -143,11 +180,11 @@ const Orders = () => {
 
   const getDeliveryProgress = (status) => {
     const statusOrder = ['pending', 'processing', 'shipped', 'in transit', 'delivered'];
-    const currentIndex = statusOrder.indexOf(status.toLowerCase());
+    const currentIndex = statusOrder.indexOf(status?.toLowerCase());
     return currentIndex >= 0 ? ((currentIndex + 1) / statusOrder.length) * 100 : 0;
   };
 
-  if (loading) {
+  if (loading && !isRefreshing) {
     return (
       <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
@@ -190,7 +227,7 @@ const Orders = () => {
                     Refresh page
                   </button>
                   <button
-                    onClick={refreshData}
+                    onClick={resetFilters}
                     className="inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
                   >
                     <FiRefreshCw className="mr-1" /> Reset filters
@@ -208,25 +245,36 @@ const Orders = () => {
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
-            Order Management Dashboard
-          </h1>
-          <p className="mt-2 text-lg text-gray-600">
-            View and manage all customer orders
-          </p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
+                Order Management
+              </h1>
+              <p className="mt-2 text-sm text-gray-600">
+                {totalOrders} total orders • Page {currentPage} of {totalPages}
+              </p>
+            </div>
+            <button
+              onClick={refreshData}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              <FiRefreshCw className={`mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+              {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
+            </button>
+          </div>
         </div>
 
-        {/* Controls Section */}
+        {/* Filters Section */}
         <div className="bg-white shadow rounded-lg p-4 mb-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Search Input */}
-            <div className="relative flex-1">
+            <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <FaSearch className="text-gray-400" />
               </div>
               <input
                 type="text"
-                placeholder="Search orders by ID, customer, or product..."
+                placeholder="Search orders..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -234,29 +282,60 @@ const Orders = () => {
             </div>
 
             {/* Status Filter */}
-            <div className="flex items-center space-x-2">
-              <span className="text-sm font-medium text-gray-700">Filter:</span>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-              >
-                <option value="all">All Statuses</option>
-                {['pending', 'processing', 'shipped', 'in transit', 'delivered', 'cancelled'].map((status) => (
-                  <option key={status} value={status}>
-                    {status.charAt(0).toUpperCase() + status.slice(1)}
-                  </option>
-                ))}
-              </select>
+            <div>
+              <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 mb-1">Order Status</label>
+              <div className="relative">
+                <select
+                  id="status-filter"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md appearance-none"
+                >
+                  <option value="all">All Statuses</option>
+                  {['pending', 'processing', 'shipped', 'in transit', 'delivered', 'cancelled', 'returned'].map((status) => (
+                    <option key={status} value={status}>
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                  <FiFilter className="text-gray-400" />
+                </div>
+              </div>
             </div>
 
-            {/* Refresh Button */}
-            <button
-              onClick={refreshData}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              <FiRefreshCw className="mr-2" /> Refresh
-            </button>
+            {/* Payment Status Filter */}
+            <div>
+              <label htmlFor="payment-filter" className="block text-sm font-medium text-gray-700 mb-1">Payment Status</label>
+              <div className="relative">
+                <select
+                  id="payment-filter"
+                  value={paymentFilter}
+                  onChange={(e) => setPaymentFilter(e.target.value)}
+                  className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md appearance-none"
+                >
+                  <option value="all">All Payments</option>
+                  {['paid', 'pending', 'failed', 'refunded'].map((status) => (
+                    <option key={status} value={status}>
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                  <FaRegCreditCard className="text-gray-400" />
+                </div>
+              </div>
+            </div>
+
+            {/* Reset Button */}
+            <div className="flex items-end">
+              <button
+                onClick={resetFilters}
+                className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <FiRefreshCw className="mr-2" /> Reset Filters
+              </button>
+            </div>
           </div>
         </div>
 
@@ -267,13 +346,13 @@ const Orders = () => {
               <FiPackage className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-4 text-lg font-medium text-gray-900">No orders found</h3>
               <p className="mt-2 text-sm text-gray-500 max-w-md mx-auto">
-                {statusFilter === 'all' && !searchQuery
+                {statusFilter === 'all' && paymentFilter === 'all' && !searchQuery
                   ? "There are currently no orders in the system."
-                  : `No orders match your ${statusFilter !== 'all' ? 'status filter' : 'search criteria'}.`}
+                  : `No orders match your current filters. Try adjusting your search criteria.`}
               </p>
               <div className="mt-6">
                 <button
-                  onClick={refreshData}
+                  onClick={resetFilters}
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   Reset filters
@@ -288,11 +367,13 @@ const Orders = () => {
                 deliveryInfo={deliveryData[order.id] || {}}
                 isLoadingDelivery={loadingDeliveries[order.id]}
                 isExpanded={expandedOrder === order.id}
-                onToggleExpand={toggleOrderExpand}
+                onToggleExpand={setExpandedOrder}
                 getStatusIcon={getStatusIcon}
                 getStatusColor={getStatusColor}
+                getPaymentStatusColor={getPaymentStatusColor}
                 formatDate={formatDate}
                 getDeliveryProgress={getDeliveryProgress}
+                onUpdatePaymentStatus={handlePaymentStatusUpdate}
               />
             ))
           )}
@@ -316,7 +397,11 @@ const Orders = () => {
               <button
                 onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                 disabled={currentPage === totalPages}
-                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md bg-white text-gray-700 hover:bg-gray-50"
+                className={`ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
+                  currentPage === totalPages
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
               >
                 Next
               </button>
@@ -325,8 +410,8 @@ const Orders = () => {
               <div>
                 <p className="text-sm text-gray-700">
                   Showing <span className="font-medium">{(currentPage - 1) * 10 + 1}</span> to{' '}
-                  <span className="font-medium">{Math.min(currentPage * 10, totalPages * 10)}</span> of{' '}
-                  <span className="font-medium">{totalPages * 10}</span> orders
+                  <span className="font-medium">{Math.min(currentPage * 10, totalOrders)}</span> of{' '}
+                  <span className="font-medium">{totalOrders}</span> orders
                 </p>
               </div>
               <div>
@@ -334,7 +419,9 @@ const Orders = () => {
                   <button
                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                     disabled={currentPage === 1}
-                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+                    className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 text-sm font-medium ${
+                      currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-500 hover:bg-gray-50'
+                    }`}
                   >
                     <span className="sr-only">Previous</span>
                     <FiChevronLeft className="h-5 w-5" />
@@ -368,7 +455,9 @@ const Orders = () => {
                   <button
                     onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                     disabled={currentPage === totalPages}
-                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+                    className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 text-sm font-medium ${
+                      currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-500 hover:bg-gray-50'
+                    }`}
                   >
                     <span className="sr-only">Next</span>
                     <FiChevronRight className="h-5 w-5" />
@@ -383,7 +472,6 @@ const Orders = () => {
   );
 };
 
-// Order Card Component for better organization
 const OrderCard = ({
   order,
   deliveryInfo,
@@ -392,69 +480,193 @@ const OrderCard = ({
   onToggleExpand,
   getStatusIcon,
   getStatusColor,
+  getPaymentStatusColor,
   formatDate,
-  getDeliveryProgress
+  getDeliveryProgress,
+  onUpdatePaymentStatus
 }) => {
+  const [isUpdatingPayment, setIsUpdatingPayment] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState(order.payment_status);
   const hasDeliveryError = deliveryInfo.error;
+  const currentStatus = deliveryInfo.order_status || order.status;
+  const progressPercentage = getDeliveryProgress(currentStatus);
+
+  const handlePaymentStatusChange = async (newStatus) => {
+    try {
+      setIsUpdatingPayment(true);
+      const response = await fetch(`http://127.0.0.1:5000/orders/${order.id}/payment-status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ payment_status: newStatus })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update payment status');
+      }
+
+      const data = await response.json();
+      setPaymentStatus(newStatus);
+      if (onUpdatePaymentStatus) {
+        onUpdatePaymentStatus(order.id, newStatus);
+      }
+    } catch (error) {
+      console.error('Error updating payment status:', error);
+    } finally {
+      setIsUpdatingPayment(false);
+    }
+  };
 
   return (
-    <div className="bg-white shadow overflow-hidden rounded-lg divide-y divide-gray-200">
+    <div className="bg-white shadow overflow-hidden rounded-lg divide-y divide-gray-200 transition-all duration-200">
       {/* Order Summary */}
       <div 
         className="px-6 py-5 sm:px-6 cursor-pointer hover:bg-gray-50 transition-colors"
-        onClick={() => onToggleExpand(order.id)}
+        onClick={() => onToggleExpand(isExpanded === order.id ? null : order.id)}
       >
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start sm:items-center">
             <div className="mr-4 mt-1 sm:mt-0">
-              {getStatusIcon(order.status)}
+              {getStatusIcon(currentStatus)}
             </div>
-            <div>
-              <div className="flex items-baseline">
-                <h3 className="text-lg font-medium text-gray-900">
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-baseline gap-2">
+                <h3 className="text-lg font-medium text-gray-900 truncate">
                   Order #{order.id}
                 </h3>
-                <span className={`ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(currentStatus)}`}>
+                  {currentStatus.charAt(0).toUpperCase() + currentStatus.slice(1)}
                 </span>
+                {order.payment_status && (
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPaymentStatusColor(order.payment_status)}`}>
+                    {order.payment_status.charAt(0).toUpperCase() + order.payment_status.slice(1)}
+                  </span>
+                )}
               </div>
-              <p className="text-sm text-gray-500">
-                Placed on {formatDate(order.created_at)}
-              </p>
-
-              {/* Customer Info */}
-              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+              
+              <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+              <div className="flex items-center text-gray-500">
+  <FiUser className="mr-1.5 flex-shrink-0" />
+  <span className="truncate">{order.user?.name || 'Unknown Customer'}</span>
+</div>
+<div className="flex items-center text-gray-500">
+  <FiMail className="mr-1.5 flex-shrink-0" />
+  <span className="truncate">{order.user?.email || 'No email'}</span>
+</div>
+<div className="flex items-center text-gray-500">
+  <FiPhone className="mr-1.5 flex-shrink-0" />
+  <span className="truncate">{order.user?.phone || 'No phone'}</span>
+</div>
                 <div className="flex items-center text-gray-500">
-                  <FiUser className="mr-1.5" />
-                  <span>{order.user?.name || 'Unknown Customer'}</span>
-                </div>
-                <div className="flex items-center text-gray-500">
-                  <FiMail className="mr-1.5" />
-                  <span>{order.user?.email || 'No email'}</span>
+                  <FiCalendar className="mr-1.5 flex-shrink-0" />
+                  <span>{formatDate(order.created_at)}</span>
                 </div>
               </div>
             </div>
           </div>
           
           <div className="mt-4 sm:mt-0 flex items-center sm:space-x-4">
-            <span className="text-lg font-semibold text-gray-900">
-              ${order.total_amount.toFixed(2)}
-            </span>
+            <div className="text-right">
+              <span className="text-lg font-semibold text-gray-900">
+                ${order.total_amount.toFixed(2)}
+              </span>
+              <div className="text-xs text-gray-500">
+                {order.order_items?.length || 0} items
+              </div>
+            </div>
             {isExpanded ? (
-              <FiChevronUp className="h-5 w-5 text-gray-500" />
+              <FiChevronUp className="h-5 w-5 text-gray-500 flex-shrink-0" />
             ) : (
-              <FiChevronDown className="h-5 w-5 text-gray-500" />
+              <FiChevronDown className="h-5 w-5 text-gray-500 flex-shrink-0" />
             )}
           </div>
         </div>
       </div>
-      {/* first_name */}
+
       {/* Expanded Order Details */}
       {isExpanded && (
-        <div className="px-6 py-5 sm:px-6 bg-gray-50">
+        <div className="px-6 py-5 sm:px-6 bg-gray-50 transition-all duration-200">
+          {/* Payment Information */}
+          <div className="mb-6">
+            <h4 className="text-md font-medium text-gray-900 mb-2">Payment Information</h4>
+            <div className="flex items-center space-x-4">
+              <div className="flex-1">
+                <label htmlFor={`payment-status-${order.id}`} className="block text-sm font-medium text-gray-700 mb-1">
+                  Payment Status
+                </label>
+                <select
+                  id={`payment-status-${order.id}`}
+                  value={paymentStatus}
+                  onChange={(e) => handlePaymentStatusChange(e.target.value)}
+                  disabled={isUpdatingPayment}
+                  className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                >
+                  {['pending', 'paid', 'failed', 'refunded'].map((status) => (
+                    <option key={status} value={status}>
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {isUpdatingPayment && (
+                <div className="flex items-center mt-6">
+                  <FiRefreshCw className="animate-spin text-gray-500" />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Delivery Progress Bar */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-gray-700">
+                Delivery Progress
+              </span>
+              <span className="text-xs font-medium text-gray-500">
+                {progressPercentage.toFixed(0)}% complete
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2.5">
+              <div 
+                className={`h-2.5 rounded-full ${
+                  currentStatus === 'delivered' ? 'bg-green-500' :
+                  currentStatus === 'cancelled' ? 'bg-red-500' :
+                  currentStatus === 'returned' ? 'bg-orange-500' :
+                  'bg-blue-500'
+                }`} 
+                style={{ width: `${progressPercentage}%` }}
+              ></div>
+            </div>
+            
+            {/* Status Steps */}
+            <div className="mt-4 grid grid-cols-5 text-xs text-center text-gray-500">
+              {['Pending', 'Processing', 'Shipped', 'In Transit', 'Delivered'].map((step, index) => {
+                const stepPercentage = (index + 1) * 20;
+                const isCompleted = progressPercentage >= stepPercentage;
+                const isCurrent = progressPercentage >= (index * 20) && progressPercentage < stepPercentage;
+                
+                return (
+                  <div key={step} className="relative">
+                    <div className={`absolute -top-6 left-1/2 transform -translate-x-1/2 w-8 h-8 rounded-full flex items-center justify-center ${
+                      isCompleted ? 'bg-green-100 text-green-800' : 
+                      isCurrent ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {index + 1}
+                    </div>
+                    <div className={`pt-4 ${isCompleted ? 'font-medium text-gray-900' : ''}`}>
+                      {step}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Order Items */}
           <div className="mb-8">
-            <h4 className="text-md font-medium text-gray-900 mb-4">Items Ordered</h4>
+            <h4 className="text-md font-medium text-gray-900 mb-4">Order Items</h4>
             <div className="overflow-hidden border border-gray-200 rounded-lg">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -474,9 +686,9 @@ const OrderCard = ({
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {order.order_items.map((item) => (
+                  {order.order_items?.map((item) => (
                     <tr key={item.id}>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4">
                         <div className="flex items-center">
                           {item.image && (
                             <div className="flex-shrink-0 h-10 w-10">
@@ -501,174 +713,208 @@ const OrderCard = ({
                     </tr>
                   ))}
                 </tbody>
+                <tfoot className="bg-gray-50">
+  <tr>
+    <td colSpan="3" className="px-6 py-3 text-right text-sm font-medium text-gray-500 uppercase">
+      Subtotal
+    </td>
+    <td className="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+      ${(order.subtotal || 0).toFixed(2)}
+    </td>
+  </tr>
+  {(order.shipping_cost || 0) > 0 && (
+    <tr>
+      <td colSpan="3" className="px-6 py-3 text-right text-sm font-medium text-gray-500 uppercase">
+        Shipping
+      </td>
+      <td className="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+        ${(order.shipping_cost || 0).toFixed(2)}
+      </td>
+    </tr>
+  )}
+  {(order.tax_amount || 0) > 0 && (
+    <tr>
+      <td colSpan="3" className="px-6 py-3 text-right text-sm font-medium text-gray-500 uppercase">
+        Tax
+      </td>
+      <td className="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+        ${(order.tax_amount || 0).toFixed(2)}
+      </td>
+    </tr>
+  )}
+  <tr>
+    <td colSpan="3" className="px-6 py-3 text-right text-sm font-medium text-gray-500 uppercase">
+      Total
+    </td>
+    <td className="px-6 py-3 whitespace-nowrap text-sm font-bold text-gray-900">
+      ${(order.total_amount || 0).toFixed(2)}
+    </td>
+  </tr>
+</tfoot>
               </table>
             </div>
           </div>
 
           {/* Delivery Information */}
-          <div className="mb-8">
-            <h4 className="text-md font-medium text-gray-900 mb-4">Delivery Information</h4>
-            
-            {isLoadingDelivery ? (
-              <div className="animate-pulse bg-gray-100 rounded-lg p-6">
-                <div className="h-4 w-1/4 bg-gray-200 rounded mb-4"></div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="h-4 w-full bg-gray-200 rounded"></div>
-                  ))}
-                </div>
-              </div>
-            ) : hasDeliveryError ? (
-              <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg mb-4">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <FiXCircle className="h-5 w-5 text-red-500" />
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm text-red-700">
-                      Error loading delivery information: {deliveryInfo.error}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Shipping Address */}
+            <div>
+              <h4 className="text-md font-medium text-gray-900 mb-4">Shipping Address</h4>
+              <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                <div className="flex items-start">
+                  <FiMapPin className="mt-1 mr-3 text-gray-500 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium text-gray-900">{order.shipping_address?.recipient_name || 'Not specified'}</p>
+                    <p className="text-sm text-gray-500">
+                      {order.shipping_address?.line1}<br />
+                      {order.shipping_address?.line2 && <>{order.shipping_address.line2}<br /></>}
+                      {order.shipping_address?.city}, {order.shipping_address?.state} {order.shipping_address?.postal_code}<br />
+                      {order.shipping_address?.country}
+                    </p>
+                    <p className="mt-2 text-sm text-gray-500">
+                      <FiPhone className="inline mr-1" />
+                      {order.shipping_address?.phone || 'No phone provided'}
                     </p>
                   </div>
                 </div>
               </div>
-            ) : (
-              <>
-                {/* Delivery Progress */}
-                <div className="mb-6">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-700">
-                      Delivery Progress
-                    </span>
-                    <span className="text-sm text-gray-500">
-                      {deliveryInfo.order_status ? 
-                        deliveryInfo.order_status.charAt(0).toUpperCase() + deliveryInfo.order_status.slice(1) : 
-                        'Unknown'}
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2.5">
-                    <div 
-                      className={`h-2.5 rounded-full ${
-                        deliveryInfo.order_status === 'delivered' ? 'bg-green-500' :
-                        deliveryInfo.order_status === 'cancelled' ? 'bg-red-500' :
-                        'bg-blue-500'
-                      }`} 
-                      style={{ width: `${getDeliveryProgress(deliveryInfo.order_status)}%` }}
-                    ></div>
+            </div>
+
+            {/* Delivery Details */}
+            <div>
+              <h4 className="text-md font-medium text-gray-900 mb-4">Delivery Details</h4>
+              {isLoadingDelivery ? (
+                <div className="animate-pulse bg-gray-100 rounded-lg p-6">
+                  <div className="h-4 w-1/4 bg-gray-200 rounded mb-4"></div>
+                  <div className="space-y-3">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="h-4 w-full bg-gray-200 rounded"></div>
+                    ))}
                   </div>
                 </div>
-
-                {/* Delivery Details Card */}
-                {deliveryInfo.delivery ? (
-                  <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div>
-                        <div className="flex items-center mb-2">
-                          <FiTruck className="text-gray-500 mr-2" />
-                          <h5 className="text-sm font-medium text-gray-500">Carrier</h5>
-                        </div>
-                        <p className="text-lg font-medium">
-                          {deliveryInfo.delivery.carrier || 'Not specified'}
-                        </p>
-                      </div>
-                      
-                      <div>
-                        <div className="flex items-center mb-2">
-                          <FiPhone className="text-gray-500 mr-2" />
-                          <h5 className="text-sm font-medium text-gray-500">Tracking</h5>
-                        </div>
-                        {deliveryInfo.delivery.tracking_number ? (
-                          <a
-                            href={deliveryInfo.delivery.tracking_url || '#'}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-lg font-medium text-blue-600 hover:underline"
-                          >
-                            {deliveryInfo.delivery.tracking_number}
-                          </a>
-                        ) : (
-                          <p className="text-lg font-medium text-gray-500">Not available</p>
-                        )}
-                      </div>
-                      
-                      <div>
-                        <div className="flex items-center mb-2">
-                          <FiCalendar className="text-gray-500 mr-2" />
-                          <h5 className="text-sm font-medium text-gray-500">Estimated Delivery</h5>
-                        </div>
-                        <p className="text-lg font-medium">
-                          {formatDate(deliveryInfo.delivery.estimated_delivery)}
-                        </p>
-                      </div>
+              ) : hasDeliveryError ? (
+                <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <FiXCircle className="h-5 w-5 text-red-500" />
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm text-red-700">
+                        Error loading delivery information: {deliveryInfo.error}
+                      </p>
                     </div>
                   </div>
-                ) : (
-                  <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg mb-6">
-                    <div className="flex">
-                      <div className="flex-shrink-0">
-                        <FiInfo className="h-5 w-5 text-yellow-500" />
+                </div>
+              ) : deliveryInfo.delivery ? (
+                <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex items-center text-sm text-gray-500 mb-1">
+                        <FiTruck className="mr-2" />
+                        <span>Carrier</span>
                       </div>
-                      <div className="ml-3">
-                        <p className="text-sm text-yellow-700">
-                          Delivery information not yet available. Your order is being processed.
-                        </p>
-                      </div>
+                      <p className="font-medium">
+                        {deliveryInfo.delivery.carrier || 'Not specified'}
+                      </p>
                     </div>
+                    
+                    <div>
+                      <div className="flex items-center text-sm text-gray-500 mb-1">
+                        <FiPackage className="mr-2" />
+                        <span>Tracking Number</span>
+                      </div>
+                      {deliveryInfo.delivery.tracking_number ? (
+                        <a
+                          href={deliveryInfo.delivery.tracking_url || '#'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-medium text-blue-600 hover:underline"
+                        >
+                          {deliveryInfo.delivery.tracking_number}
+                        </a>
+                      ) : (
+                        <p className="font-medium text-gray-500">Not available</p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <div className="flex items-center text-sm text-gray-500 mb-1">
+                        <FiCalendar className="mr-2" />
+                        <span>Estimated Delivery</span>
+                      </div>
+                      <p className="font-medium">
+                        {formatDate(deliveryInfo.delivery.estimated_delivery) || 'Not available'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <FiInfo className="h-5 w-5 text-yellow-500" />
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm text-yellow-700">
+                        Delivery information not yet available. Your order is being processed.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Status Timeline */}
+          <div className="mt-8">
+            <h4 className="text-md font-medium text-gray-900 mb-4">Status History</h4>
+            <div className="flow-root">
+              <ul className="-mb-8">
+                {deliveryInfo.status_updates?.length > 0 ? (
+                  deliveryInfo.status_updates.map((update, updateIdx) => (
+                    <li key={updateIdx}>
+                      <div className="relative pb-8">
+                        {updateIdx !== deliveryInfo.status_updates.length - 1 && (
+                          <span className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true" />
+                        )}
+                        <div className="relative flex space-x-3">
+                          <div>
+                            <span className={`h-8 w-8 rounded-full flex items-center justify-center ring-8 ring-gray-50 ${
+                              getStatusColor(update.status).replace('text', 'bg')
+                            }`}>
+                              {getStatusIcon(update.status)}
+                            </span>
+                          </div>
+                          <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                            <div>
+                              <p className="text-sm text-gray-500">
+                                Status changed to <span className="font-medium text-gray-900">
+                                  {update.status}
+                                </span>
+                                {update.notes && (
+                                  <span className="block mt-1 text-sm text-gray-500">
+                                    Note: {update.notes}
+                                  </span>
+                                )}
+                              </p>
+                            </div>
+                            <div className="text-right text-sm whitespace-nowrap text-gray-500">
+                              <time dateTime={update.updated_at}>
+                                {formatDate(update.updated_at)}
+                              </time>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                  ))
+                ) : (
+                  <div className="text-center py-4 text-sm text-gray-500">
+                    No status updates available yet
                   </div>
                 )}
-
-                {/* Status Timeline */}
-                <div>
-                  <h5 className="text-md font-medium text-gray-900 mb-4">Status Updates</h5>
-                  <div className="flow-root">
-                    <ul className="-mb-8">
-                      {deliveryInfo.status_updates?.length > 0 ? (
-                        deliveryInfo.status_updates.map((update, updateIdx) => (
-                          <li key={updateIdx}>
-                            <div className="relative pb-8">
-                              {updateIdx !== deliveryInfo.status_updates.length - 1 && (
-                                <span className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true" />
-                              )}
-                              <div className="relative flex space-x-3">
-                                <div>
-                                  <span className={`h-8 w-8 rounded-full flex items-center justify-center ring-8 ring-gray-50 ${
-                                    getStatusColor(update.status).replace('text', 'bg')
-                                  }`}>
-                                    {getStatusIcon(update.status)}
-                                  </span>
-                                </div>
-                                <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
-                                  <div>
-                                    <p className="text-sm text-gray-500">
-                                      Status changed to <span className="font-medium text-gray-900">
-                                        {update.status}
-                                      </span>
-                                      {update.notes && (
-                                        <span className="block mt-1 text-sm text-gray-500">
-                                          Note: {update.notes}
-                                        </span>
-                                      )}
-                                    </p>
-                                  </div>
-                                  <div className="text-right text-sm whitespace-nowrap text-gray-500">
-                                    <time dateTime={update.updated_at}>
-                                      {formatDate(update.updated_at)}
-                                    </time>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </li>
-                        ))
-                      ) : (
-                        <div className="text-center py-4 text-sm text-gray-500">
-                          No status updates available yet
-                        </div>
-                      )}
-                    </ul>
-                  </div>
-                </div>
-              </>
-            )}
+              </ul>
+            </div>
           </div>
         </div>
       )}

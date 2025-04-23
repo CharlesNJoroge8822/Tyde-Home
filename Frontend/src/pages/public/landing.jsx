@@ -56,6 +56,7 @@ const Landing = () => {
           &times;
         </button>
     
+{/* Tyde Home Fittings */}
         {/* 🌟 Decorative Elements */}
         <div className="absolute -top-3 -left-3 w-16 h-16 bg-blue-100 rounded-full opacity-30"></div>
         <div className="absolute -bottom-3 -right-3 w-20 h-20 bg-blue-100 rounded-full opacity-30"></div>
@@ -394,12 +395,14 @@ const Landing = () => {
         <div className="relative z-10 text-center px-4 max-w-6xl mx-auto">
           <h1 className="text-5xl md:text-7xl font-bold text-blue-100 mb-6 leading-tight">
             <span className="text-blue-400">Tyde</span> Home Fittings, Sanitary Wares & Supplies
-          </h1>
+            {/* <h2 className="text-green-600  bg-blue-600">john/h2>
+            <p>This is john njuguna</p> */}
 
+          </h1>
+{/* FiLorry */}
           <p className="text-xl md:text-2xl text-blue-100 mb-10 max-w-3xl mx-auto">
             We've provided the toughest, most reliable industrial components to Kenya's toughest industries
           </p>
-
           <div className="flex gap-4 justify-center">
             <button className="bg-blue-800 hover:bg-blue-500 text-blue-300 font-bold py-4 px-10 rounded-lg text-lg transition-all duration-300 transform hover:scale-105 flex items-center gap-2 shadow-lg">
               <FaShoppingCart /> Browse Catalog

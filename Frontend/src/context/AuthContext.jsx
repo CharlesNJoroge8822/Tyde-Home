@@ -16,38 +16,26 @@ export function AuthProvider({ children }) {
   const [error, setError] = useState(null);
 
   // // Check auth status on initial load
-  // useEffect(() => {
-  //   const checkAuth = async () => {
-  //     try {
-  //       const res = await api.get('/check');
-  //       setUser(res.data.user);
-  //     } catch (err) {
-  //       setUser(null);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-  //   checkAuth();
-  // }, []);
-
-  // Login user
-  // const login = async (email, password) => {
-  //   setLoading(true);
-  //   setError(null);
-  //   try {
-  //     const res = await api.post('/login', { email, password });
-  //     setUser(res.data.user);
-  //     toast.success('Login successful!');
-  //     return { success: true, user: res.data.user };
-  //   } catch (err) {
-  //     const errorMsg = err.response?.data?.message || 'Login failed';
-  //     setError(errorMsg);
-  //     toast.error(errorMsg);
-  //     return { success: false, error: errorMsg };
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await api.get('http://127.0.0.1:5000/check', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        setUser(res.data.user);
+      } catch (err) {
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    checkAuth();
+  }, []);
+  
+  
 
   // Google login
   const googleLogin = async () => {

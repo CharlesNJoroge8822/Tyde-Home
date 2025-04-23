@@ -1,212 +1,666 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { FiSend, FiUser, FiMessageSquare, FiAlertCircle, FiChevronLeft } from 'react-icons/fi';
-import { FaUserShield } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { FiSend, FiChevronDown, FiUser, FiMessageSquare, FiClock } from 'react-icons/fi';
 
-const MessagePage = () => {
+const MessagingPage = ({ userId }) => {
   const [messages, setMessages] = useState([]);
+  const [conversations, setConversations] = useState([]);
+  const [selectedAdmin, setSelectedAdmin] = useState(null);
   const [newMessage, setNewMessage] = useState('');
-  const [currentUserId, setCurrentUserId] = useState(null);
-  const [adminId, setAdminId] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const messagesEndRef = useRef(null);
+  const [error, setError] = useState('');
+  const [admins, setAdmins] = useState([]);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  // Scroll to bottom of messages
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const token = localStorage.getItem('token');
 
-  useEffect(scrollToBottom, [messages]);
-
-  // Fetch current user ID and admin ID
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        setLoading(true);
-        const user = JSON.parse(localStorage.getItem('user'));
-        if (!user || !user.id) {
-          navigate('/login');
-          return;
-        }
-        setCurrentUserId(user.id);
-
-        const adminResponse = await fetch('http://127.0.0.1:5000/get_admin_id');
-        const adminData = await adminResponse.json();
-        if (!adminResponse.ok) throw new Error(adminData.error || 'Failed to fetch admin ID');
-        setAdminId(adminData.admin_id);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUserData();
-  }, []);
-// blue
-  // Fetch messages when IDs are available
-  useEffect(() => {
-    if (currentUserId && adminId) {
-      fetchMessages();
-      // Set up polling for new messages
-      const interval = setInterval(fetchMessages, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [currentUserId, adminId]);
-
-  const fetchMessages = async () => {
+  const fetchConversations = async () => {
+    if (!token) return;
+    
+    setLoading(true);
     try {
-      const response = await fetch(
-        `http://127.0.0.1:5000/conversation/${currentUserId}/${adminId}`
-      );
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Failed to fetch messages');
-      
-      const formattedMessages = data.map(msg => ({
-        ...msg,
-        sender_name: msg.sender_id === currentUserId ? 'You' : 'Admin'
-      }));
-      
-      setMessages(formattedMessages);
-    } catch (err) {
-      console.error('Error fetching messages:', err);
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!newMessage.trim()) {
-      setError('Message cannot be empty');
-      return;
-    }
-
-    try {
-      const response = await fetch('http://127.0.0.1:5000/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          sender_id: currentUserId,
-          recipient_id: adminId,
-          content: newMessage
-        }),
+      const response = await axios.get('http://127.0.0.1:5000/messages/conversations', {
+        headers: { Authorization: `Bearer ${token}` }
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to send message');
+      setConversations(response.data);
+      
+      // Select first conversation by default if none selected
+      if (response.data.length > 0 && !selectedAdmin) {
+        setSelectedAdmin(response.data[0].admin_id);
       }
-
-      const sentMessage = await response.json();
-      setMessages([...messages, {
-        ...sentMessage,
-        sender_id: currentUserId,
-        sender_name: 'You'
-      }]);
-      setNewMessage('');
-      setError(null);
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.error || 'Failed to load conversations');
+    } finally {
+      setLoading(false);
     }
   };
+
+  const fetchAdmins = async () => {
+    try {
+      const response = await axios.get('http://127.0.0.1:5000/messages/admins', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAdmins(response.data);
+    } catch (err) {
+      console.error('Failed to fetch admins:', err);
+    }
+  };
+
+  const fetchMessages = async (adminId) => {
+    if (!adminId || !token) return;
+    
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        `http://127.0.0.1:5000/messages/conversation/${adminId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setMessages(response.data);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to load messages');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !selectedAdmin || !token) return;
+
+    setLoading(true);
+    try {
+      await axios.post(
+        'http://127.0.0.1:5000/messages',
+        {
+          recipient_id: selectedAdmin,
+          content: newMessage
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setNewMessage('');
+      fetchMessages(selectedAdmin); // Refresh messages
+      fetchConversations(); // Refresh conversation list
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to send message');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    try {
+      const date = new Date(dateString);
+      const now = new Date();
+      
+      // If today, show time only
+      if (date.toDateString() === now.toDateString()) {
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
+      
+      // If yesterday, show "Yesterday"
+      const yesterday = new Date(now);
+      yesterday.setDate(yesterday.getDate() - 1);
+      if (date.toDateString() === yesterday.toDateString()) {
+        return 'Yesterday';
+      }
+      
+      // Otherwise show date
+      return date.toLocaleDateString();
+    } catch {
+      return dateString;
+    }
+  };
+
+  useEffect(() => {
+    fetchAdmins();
+    fetchConversations();
+  }, [userId]);
+
+  useEffect(() => {
+    if (selectedAdmin) {
+      fetchMessages(selectedAdmin);
+    }
+  }, [selectedAdmin]);
 
   return (
-    <div className="flex flex-col h-screen bg-blue-50 font-serif">
-      {/* Header */}
-      <div className="bg-blue-800 text-blue-50 p-4 flex items-center shadow-md">
-        <button 
-          onClick={() => window.history.back()}
-          className="mr-4 text-blue-200 hover:text-white"
-        >
-          <FiChevronLeft size={24} />
-        </button>
-        <FaUserShield className="text-blue-200 mr-3" size={20} />
-        <div>
-          <h2 className="text-xl font-bold">Admin Support</h2>
-          <p className="text-xs text-blue-200">Typically replies within an hour</p>
+    <div className="messaging-container">
+      {/* Conversation sidebar */}
+      <div className="conversation-sidebar">
+        <div className="sidebar-header">
+          <h3>Messages</h3>
+        </div>
+        
+        <div className="admin-selector">
+          <div 
+            className="dropdown-trigger"
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+          >
+            <span>
+              {selectedAdmin 
+                ? admins.find(a => a.id === selectedAdmin)?.name || 'Select Admin'
+                : 'Select Admin'}
+            </span>
+            <FiChevronDown className={`dropdown-icon ${isDropdownOpen ? 'open' : ''}`} />
+          </div>
+          
+          {isDropdownOpen && (
+            <div className="dropdown-menu">
+              {admins.map(admin => (
+                <div 
+                  key={admin.id}
+                  className="dropdown-item"
+                  onClick={() => {
+                    setSelectedAdmin(admin.id);
+                    setIsDropdownOpen(false);
+                  }}
+                >
+                  <FiUser className="admin-icon" />
+                  <span>{admin.name}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        
+        <div className="conversation-list">
+          {conversations.map(conv => (
+            <div 
+              key={conv.admin_id}
+              className={`conversation-item ${selectedAdmin === conv.admin_id ? 'active' : ''}`}
+              onClick={() => setSelectedAdmin(conv.admin_id)}
+            >
+              <div className="conversation-header">
+                <div className="admin-name">{conv.admin_name}</div>
+                <div className="message-time">{formatDate(conv.last_message_time)}</div>
+              </div>
+              
+              <div className="message-preview">
+                <FiMessageSquare className="message-icon" />
+                <span>{conv.last_message}</span>
+              </div>
+              
+              {conv.unread_count > 0 && (
+                <div className="unread-badge">{conv.unread_count}</div>
+              )}
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto p-4 bg-blue-100 bg-opacity-50">
-        {loading && messages.length === 0 ? (
-          <div className="flex justify-center items-center h-full">
-            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-700"></div>
-          </div>
-        ) : messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-blue-800">
-            <FiMessageSquare size={48} className="mb-4 opacity-50" />
-            <p className="text-lg">No messages yet</p>
-            <p className="text-sm">Start the conversation with our support team</p>
-          </div>
-        ) : (
-          messages.map((msg) => (
-            <div 
-              key={msg.id} 
-              className={`flex mb-4 ${msg.sender_id === currentUserId ? 'justify-end' : 'justify-start'}`}
-            >
-              <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg relative ${
-                msg.sender_id === currentUserId 
-                  ? 'bg-blue-600 text-blue-50 rounded-tr-none' 
-                  : 'bg-blue-200 text-blue-900 rounded-tl-none'
-              }`}>
-                <div className="flex items-center mb-1">
-                  {msg.sender_id === currentUserId ? (
-                    <FiUser className="mr-1" />
-                  ) : (
-                    <FaUserShield className="mr-1" />
-                  )}
-                  <span className="font-semibold text-xs">
-                    {msg.sender_name}
-                  </span>
-                </div>
-                <p className="text-sm">{msg.content}</p>
-                <div className={`text-xs mt-1 text-right ${
-                  msg.sender_id === currentUserId ? 'text-blue-200' : 'text-blue-700'
-                }`}>
-                  {new Date(msg.created_at).toLocaleTimeString([], { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                  })}
-                </div>
-              </div>
+      {/* Message area */}
+      <div className="message-area">
+        {selectedAdmin ? (
+          <>
+            <div className="message-header">
+              <h3>
+                <FiUser className="header-icon" />
+                {admins.find(a => a.id === selectedAdmin)?.name || 'Admin'}
+              </h3>
             </div>
-          ))
+            
+            <div className="message-list">
+              {loading ? (
+                <div className="loading-messages">
+                  <div className="spinner"></div>
+                  <p>Loading messages...</p>
+                </div>
+              ) : messages.length === 0 ? (
+                <div className="empty-messages">
+                  <FiMessageSquare className="empty-icon" />
+                  <p>No messages yet. Start the conversation!</p>
+                </div>
+              ) : (
+                messages.map(msg => (
+                  <div 
+                    key={msg.id} 
+                    className={`message-bubble ${msg.sender_id === userId ? 'sent' : 'received'}`}
+                  >
+                    <div className="message-content">
+                      <div className="message-sender">
+                        {msg.sender_id === userId ? 'You' : msg.sender_name}
+                      </div>
+                      <div className="message-text">{msg.content}</div>
+                      <div className="message-time">
+                        <FiClock className="time-icon" />
+                        {formatDate(msg.created_at)}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+            
+            <div className="message-input-container">
+              <textarea
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="Type your message..."
+                rows={1}
+                className="message-input"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                }}
+              />
+              <button
+                onClick={handleSendMessage}
+                disabled={!newMessage.trim() || loading}
+                className="send-button"
+              >
+                {loading ? (
+                  <div className="send-spinner"></div>
+                ) : (
+                  <>
+                    <span>Send</span>
+                    <FiSend className="send-icon" />
+                  </>
+                )}
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="no-conversation-selected">
+            <FiMessageSquare className="empty-icon" />
+            <h3>Select a conversation</h3>
+            <p>Choose an admin from the sidebar to start messaging</p>
+          </div>
         )}
-        <div ref={messagesEndRef} />
-      </div>
 
-      {/* Message Input Form */}
-      <form 
-        onSubmit={handleSubmit} 
-        className="p-3 bg-blue-100 border-t border-blue-200"
-      >
         {error && (
-          <div className="flex items-center bg-red-100 text-red-800 p-2 mb-2 rounded text-sm">
-            <FiAlertCircle className="mr-2" />
+          <div className="error-message">
             {error}
           </div>
         )}
-        <div className="flex items-center">
-          <input
-            type="text"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type your message..."
-            className="flex-1 px-4 py-2 rounded-full border border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-blue-50"
-            disabled={!currentUserId || !adminId}
-          />
-          <button 
-            type="submit"
-            disabled={!newMessage.trim() || !currentUserId || !adminId}
-            className="ml-2 p-2 bg-blue-700 text-white rounded-full hover:bg-blue-800 disabled:opacity-50"
-          >
-            <FiSend />
-          </button>
-        </div>
-      </form>
+      </div>
+      
+      <style jsx>{`
+        .messaging-container {
+          display: flex;
+          max-width: 1200px;
+          height: 80vh;
+          margin: 20px auto;
+          background: white;
+          border-radius: 12px;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+          overflow: hidden;
+        }
+        
+        .conversation-sidebar {
+          width: 320px;
+          border-right: 1px solid #eaeaea;
+          display: flex;
+          flex-direction: column;
+          background: #f9f9f9;
+        }
+        
+        .sidebar-header {
+          padding: 20px;
+          border-bottom: 1px solid #eaeaea;
+        }
+        
+        .sidebar-header h3 {
+          margin: 0;
+          font-size: 18px;
+          color: #333;
+        }
+        
+        .admin-selector {
+          position: relative;
+          padding: 15px;
+          border-bottom: 1px solid #eaeaea;
+        }
+        
+        .dropdown-trigger {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 10px 15px;
+          background: white;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        
+        .dropdown-trigger:hover {
+          border-color: #999;
+        }
+        
+        .dropdown-icon {
+          transition: transform 0.2s;
+        }
+        
+        .dropdown-icon.open {
+          transform: rotate(180deg);
+        }
+        
+        .dropdown-menu {
+          position: absolute;
+          top: 100%;
+          left: 15px;
+          right: 15px;
+          background: white;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          margin-top: 5px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          z-index: 10;
+          max-height: 300px;
+          overflow-y: auto;
+        }
+        
+        .dropdown-item {
+          display: flex;
+          align-items: center;
+          padding: 10px 15px;
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+        
+        .dropdown-item:hover {
+          background: #f5f5f5;
+        }
+        
+        .admin-icon {
+          margin-right: 10px;
+          color: #666;
+        }
+        
+        .conversation-list {
+          flex: 1;
+          overflow-y: auto;
+          padding: 10px 0;
+        }
+        
+        .conversation-item {
+          padding: 15px;
+          cursor: pointer;
+          transition: background 0.2s;
+          position: relative;
+          border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .conversation-item:hover {
+          background: #f0f0f0;
+        }
+        
+        .conversation-item.active {
+          background: #e6f2ff;
+        }
+        
+        .conversation-header {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 5px;
+        }
+        
+        .admin-name {
+          font-weight: 600;
+          color: #333;
+        }
+        
+        .message-time {
+          font-size: 12px;
+          color: #999;
+        }
+        
+        .message-preview {
+          display: flex;
+          align-items: center;
+          font-size: 14px;
+          color: #666;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        
+        .message-icon {
+          margin-right: 8px;
+          flex-shrink: 0;
+          color: #999;
+        }
+        
+        .unread-badge {
+          position: absolute;
+          top: 15px;
+          right: 15px;
+          background: #4CAF50;
+          color: white;
+          border-radius: 50%;
+          width: 20px;
+          height: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 12px;
+          font-weight: bold;
+        }
+        
+        .message-area {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          background: #fefefe;
+        }
+        
+        .message-header {
+          padding: 20px;
+          border-bottom: 1px solid #eaeaea;
+        }
+        
+        .message-header h3 {
+          margin: 0;
+          font-size: 18px;
+          display: flex;
+          align-items: center;
+        }
+        
+        .header-icon {
+          margin-right: 10px;
+          color: #555;
+        }
+        
+        .message-list {
+          flex: 1;
+          padding: 20px;
+          overflow-y: auto;
+          background: #f5f7fb;
+          display: flex;
+          flex-direction: column;
+        }
+        
+        .message-bubble {
+          max-width: 70%;
+          margin-bottom: 15px;
+          animation: fadeIn 0.3s ease-out;
+        }
+        
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .message-bubble.sent {
+          align-self: flex-end;
+        }
+        
+        .message-bubble.received {
+          align-self: flex-start;
+        }
+        
+        .message-content {
+          padding: 12px 16px;
+          border-radius: 18px;
+          position: relative;
+          word-wrap: break-word;
+        }
+        
+        .message-bubble.sent .message-content {
+          background: #4CAF50;
+          color: white;
+          border-top-right-radius: 4px;
+        }
+        
+        .message-bubble.received .message-content {
+          background: white;
+          color: #333;
+          border-top-left-radius: 4px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .message-sender {
+          font-weight: 600;
+          font-size: 12px;
+          margin-bottom: 4px;
+        }
+        
+        .message-bubble.sent .message-sender {
+          color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .message-bubble.received .message-sender {
+          color: #666;
+        }
+        
+        .message-text {
+          line-height: 1.4;
+        }
+        
+        .message-time {
+          font-size: 11px;
+          margin-top: 5px;
+          display: flex;
+          align-items: center;
+          opacity: 0.8;
+        }
+        
+        .time-icon {
+          margin-right: 4px;
+          font-size: 10px;
+        }
+        
+        .message-input-container {
+          padding: 15px;
+          border-top: 1px solid #eaeaea;
+          background: white;
+          display: flex;
+          align-items: flex-end;
+        }
+        
+        .message-input {
+          flex: 1;
+          padding: 12px 15px;
+          border: 1px solid #ddd;
+          border-radius: 24px;
+          resize: none;
+          outline: none;
+          font-family: inherit;
+          font-size: 14px;
+          transition: all 0.2s;
+          max-height: 120px;
+          overflow-y: auto;
+        }
+        
+        .message-input:focus {
+          border-color: #4CAF50;
+          box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+        }
+        
+        .send-button {
+          margin-left: 10px;
+          padding: 10px 20px;
+          background: #4CAF50;
+          color: white;
+          border: none;
+          border-radius: 24px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          transition: all 0.2s;
+          font-weight: 500;
+        }
+        
+        .send-button:hover {
+          background: #43a047;
+        }
+        
+        .send-button:disabled {
+          background: #cccccc;
+          cursor: not-allowed;
+        }
+        
+        .send-icon {
+          margin-left: 8px;
+        }
+        
+        .send-spinner {
+          width: 16px;
+          height: 16px;
+          border: 2px solid rgba(255, 255, 255, 0.3);
+          border-radius: 50%;
+          border-top-color: white;
+          animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        
+        .loading-messages {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          height: 100%;
+          color: #666;
+        }
+        
+        .spinner {
+          width: 40px;
+          height: 40px;
+          border: 4px solid rgba(76, 175, 80, 0.1);
+          border-radius: 50%;
+          border-top-color: #4CAF50;
+          animation: spin 1s ease-in-out infinite;
+          margin-bottom: 15px;
+        }
+        
+        .empty-messages, .no-conversation-selected {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          height: 100%;
+          color: #999;
+          text-align: center;
+          padding: 20px;
+        }
+        
+        .empty-icon {
+          font-size: 48px;
+          margin-bottom: 15px;
+          color: #ddd;
+        }
+        
+        .error-message {
+          padding: 10px 15px;
+          background: #ffebee;
+          color: #c62828;
+          border-radius: 4px;
+          margin: 15px;
+          font-size: 14px;
+          animation: shake 0.5s;
+        }
+        
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          20%, 60% { transform: translateX(-5px); }
+          40%, 80% { transform: translateX(5px); }
+        }
+      `}</style>
     </div>
   );
 };
 
-export default MessagePage;
+export default MessagingPage;

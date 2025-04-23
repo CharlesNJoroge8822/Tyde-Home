@@ -56,7 +56,13 @@ const DeliveriesPage = () => {
   const fetchRecentOrders = async () => {
     setLoading(prev => ({ ...prev, orders: true }));
     try {
-      const response = await fetch('http://127.0.0.1:5000/orders/admin-orders?per_page=10');
+      const token = localStorage.getItem('token'); // or however you store the token
+      const response = await fetch('http://127.0.0.1:5000/orders/admin-orders?per_page=10', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+  
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Failed to fetch orders');
       
@@ -67,6 +73,7 @@ const DeliveriesPage = () => {
       setLoading(prev => ({ ...prev, orders: false }));
     }
   };
+  
 
   // Create or update delivery
 const handleSubmit = async (e) => {
