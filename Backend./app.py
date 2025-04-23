@@ -57,13 +57,15 @@ def create_app():
     # CORS Configuration
     cors.init_app(app, resources={
         r"/*": {
-            "origins": ["http://localhost:5173"],  # Allow only this specific frontend origin
+            "origins": [
+                "http://localhost:5173",  # for local dev
+                "https://tydehomefittingsandsanitarywares.vercel.app"  # for production
+            ],
             "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
             "allow_headers": ["Content-Type", "Authorization"],
             "supports_credentials": True
         }
     })
-
     
     # Database
     db.init_app(app)
