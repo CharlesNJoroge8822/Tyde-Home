@@ -29,7 +29,8 @@ import {
 import { GiMetalBar, GiValve } from "react-icons/gi";
 import { IoIosArrowForward } from "react-icons/io";
 import { Link } from "react-router-dom";
-// 1983
+// 
+// /tyde.jpeg
 const Landing = () => {
   const [showNumber, setShowNumber] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -345,20 +346,20 @@ const Landing = () => {
   // Testimonials
   const testimonials = [
     {
-      name: "James Kariuki",
-      position: "Chief Engineer, Nairobi Water Co.",
-      content: "Tyde Industrial has been our trusted supplier for 5 years. Their pipe fittings have withstood extreme pressure conditions at our treatment plants.",
+      name: "Paul Maina",
+      position: "Tyde Homes And Fittings",
+      content: "Tyde Industrial has been our trusted supplier. Their pipe fittings have withstood extreme pressure conditions at our treatment plants.",
       rating: 5
     },
     {
-      name: "Susan Mwangi",
-      position: "Project Manager, BuildRight Ltd",
+      name: "Moses Njoroge",
+      position: "Sons Of Men Coop.",
       content: "The quality of their stainless steel products is exceptional. We've used their materials in three major industrial projects with zero failures.",
       rating: 5
     },
     {
-      name: "David Omondi",
-      position: "Maintenance Supervisor, Kenya Breweries",
+      name: "Luqman Bashir",
+      position: "The Charles Factor",
       content: "Their 24/7 emergency supply service has saved us multiple times during plant shutdowns. Reliable doesn't begin to describe them.",
       rating: 4
     }
@@ -366,12 +367,12 @@ const Landing = () => {
 
   // Gallery images
   const galleryImages = [
-    { id: 1, src: "/public/warefac.jpeg", alt: "Our Warehouse Facility", caption: "State-of-the-art warehouse storage" },
+    { id: 1, src: "/warefac.jpeg", alt: "Our Warehouse Facility", caption: "State-of-the-art warehouse storage" },
     { id: 2, src: "/inspection1.jpeg", alt: "Quality Inspection", caption: "Rigorous quality control process" },
     { id: 3, src: "/delivery1.jpeg", alt: "Product Delivery", caption: "Timely nationwide delivery" },
     { id: 4, src: "/team1.jpeg", alt: "Our Expert Team", caption: "Dedicated technical team" },
     { id: 5, src: "/factory1.jpeg", alt: "Manufacturing Facility", caption: "Modern manufacturing equipment" },
-    { id: 6, src: "/public/stafftrain.jpeg", alt: "Staff Training", caption: "Continuous staff training" }
+    { id: 6, src: "/stafftrain.jpeg", alt: "Staff Training", caption: "Continuous staff training" }
   ];
 
   // Partners logos
@@ -382,13 +383,13 @@ const Landing = () => {
     { id: 4, name: "Kenya Power", logo: "/partner4.png" },
     { id: 5, name: "Construction Authority", logo: "/partner5.png" }
   ];
-
+//
   return (
     <div className="bg-blue-50 font-serif">
       {/* Hero Section (Original Version) */}
       <section
         className="relative h-[80vh] flex items-center justify-center bg-cover bg-center"
-        style={{ backgroundImage: "url('/public/tyde.jpeg')" }}
+        style={{ backgroundImage: "url('/tyde.jpeg')" }}
       >
         <div className="absolute inset-0 bg-black bg-opacity-60"></div>
 

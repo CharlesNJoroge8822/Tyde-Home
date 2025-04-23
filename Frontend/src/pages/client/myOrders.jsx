@@ -41,7 +41,7 @@ const MyOrders = () => {
       else setLoadingMore(true);
 
       const response = await fetch(
-        `http://localhost:5000/orders/my-orders?page=${pageNum}&per_page=${pagination.perPage}`,
+        `https://tyde-home.onrender.com/orders/my-orders?page=${pageNum}&per_page=${pagination.perPage}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,

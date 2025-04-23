@@ -102,7 +102,7 @@ const App = () => {
     }
 
     try {
-      const response = await axios.get('http://127.0.0.1:5000/verify-token', {
+      const response = await axios.get('https://tyde-home.onrender.com/verify-token', {
         headers: { Authorization: `Bearer ${token}` }
       });
       

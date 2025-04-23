@@ -31,7 +31,7 @@ const ManageUsers = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://127.0.0.1:5000/');
+      const response = await axios.get('https://tyde-home.onrender.com/');
       setUsers(Array.isArray(response.data) ? response.data : response.data.users || []);
     } catch (error) {
       toast.error('Failed to fetch users');
@@ -45,7 +45,7 @@ const ManageUsers = () => {
   const fetchUserOrders = async (userId) => {
     try {
       setOrdersLoading(true);
-      const response = await axios.get(`http://127.0.0.1:5000/orders/user/${userId}`);
+      const response = await axios.get(`https://tyde-home.onrender.com/orders/user/${userId}`);
       setUserOrders(response.data);
     } catch (error) {
       toast.error('Failed to fetch user orders');
@@ -79,7 +79,7 @@ const ManageUsers = () => {
   const handleCreateUser = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://127.0.0.1:5000/register', formData);
+      const response = await axios.post('https://tyde-home.onrender.com/register', formData);
       toast.success('User created successfully');
       fetchUsers();
       setFormData({
@@ -100,7 +100,7 @@ const ManageUsers = () => {
   const handleUpdateUser = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`http://127.0.0.1:5000/${editingUser.id}`, formData);
+      await axios.put(`https://tyde-home.onrender.com/${editingUser.id}`, formData);
       toast.success('User updated successfully');
       fetchUsers();
       setEditingUser(null);
@@ -122,7 +122,7 @@ const ManageUsers = () => {
   const handleDeleteUser = async (userId) => {
     if (window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
       try {
-        await axios.delete(`http://127.0.0.1:5000/users/${userId}`);
+        await axios.delete(`https://tyde-home.onrender.com/users/${userId}`);
         toast.success('User deleted successfully');
         fetchUsers();
       } catch (error) {

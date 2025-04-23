@@ -32,7 +32,7 @@ const DeliveriesPage = () => {
   const fetchDeliveries = async () => {
     setLoading(prev => ({ ...prev, deliveries: true }));
     try {
-      let url = 'http://127.0.0.1:5000/api/deliveries';
+      let url = 'https://tyde-home.onrender.com/api/deliveries';
       const params = new URLSearchParams();
       
       if (searchTerm) params.append('search', searchTerm);
@@ -57,7 +57,7 @@ const DeliveriesPage = () => {
     setLoading(prev => ({ ...prev, orders: true }));
     try {
       const token = localStorage.getItem('token'); // or however you store the token
-      const response = await fetch('http://127.0.0.1:5000/orders/admin-orders?per_page=10', {
+      const response = await fetch('https://tyde-home.onrender.com/orders/admin-orders?per_page=10', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -91,8 +91,8 @@ const handleSubmit = async (e) => {
     };
 
     const url = editingDelivery
-      ? `http://127.0.0.1:5000/api/deliveries/${editingDelivery.id}`
-      : 'http://127.0.0.1:5000/api/deliveries';
+      ? `https://tyde-home.onrender.com/api/deliveries/${editingDelivery.id}`
+      : 'https://tyde-home.onrender.com/api/deliveries';
 
     const method = editingDelivery ? 'PUT' : 'POST';
 
@@ -195,7 +195,7 @@ const handleSubmit = async (e) => {
         requestBody.notes = `Status changed from ${currentStatus} to ${newStatus}`;
       }
   
-      const response = await fetch(`http://127.0.0.1:5000/api/deliveries/${deliveryId}/status`, {
+      const response = await fetch(`https://tyde-home.onrender.com/api/deliveries/${deliveryId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -231,7 +231,7 @@ const handleSubmit = async (e) => {
     if (!result.isConfirmed) return;
     
     try {
-      const response = await fetch(`http://127.0.0.1:5000/api/deliveries/${deliveryId}`, {
+      const response = await fetch(`https://tyde-home.onrender.com/api/deliveries/${deliveryId}`, {
         method: 'DELETE'
       });
 

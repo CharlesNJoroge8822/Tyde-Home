@@ -25,7 +25,7 @@ const AdsPage = () => {
   const fetchAds = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://127.0.0.1:5000/ads/admin');
+      const response = await fetch('https://tyde-home.onrender.com/ads/admin');
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Failed to fetch ads');
       setAds(data);
@@ -128,8 +128,8 @@ const AdsPage = () => {
 
     try {
       const url = editingAd 
-        ? `http://127.0.0.1:5000/ads/${editingAd.id}`
-        : 'http://127.0.0.1:5000/ads/';
+        ? `https://tyde-home.onrender.com/ads/${editingAd.id}`
+        : 'https://tyde-home.onrender.com/ads/';
       
       const method = editingAd ? 'PUT' : 'POST';
       
@@ -233,7 +233,7 @@ const AdsPage = () => {
     if (!result) return;
 
     try {
-      const response = await fetch(`http://127.0.0.1:5000/ads/${adId}`, {
+      const response = await fetch(`https://tyde-home.onrender.com/ads/${adId}`, {
         method: 'DELETE'
       });
 

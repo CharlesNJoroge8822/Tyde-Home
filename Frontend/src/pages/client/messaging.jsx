@@ -19,7 +19,7 @@ const MessagingPage = ({ userId }) => {
     
     setLoading(true);
     try {
-      const response = await axios.get('http://127.0.0.1:5000/messages/conversations', {
+      const response = await axios.get('https://tyde-home.onrender.com/messages/conversations', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setConversations(response.data);
@@ -37,7 +37,7 @@ const MessagingPage = ({ userId }) => {
 
   const fetchAdmins = async () => {
     try {
-      const response = await axios.get('http://127.0.0.1:5000/messages/admins', {
+      const response = await axios.get('https://tyde-home.onrender.com/messages/admins', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAdmins(response.data);
@@ -52,7 +52,7 @@ const MessagingPage = ({ userId }) => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `http://127.0.0.1:5000/messages/conversation/${adminId}`,
+        `https://tyde-home.onrender.com/messages/conversation/${adminId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setMessages(response.data);
@@ -69,7 +69,7 @@ const MessagingPage = ({ userId }) => {
     setLoading(true);
     try {
       await axios.post(
-        'http://127.0.0.1:5000/messages',
+        'https://tyde-home.onrender.com/messages',
         {
           recipient_id: selectedAdmin,
           content: newMessage

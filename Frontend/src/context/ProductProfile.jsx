@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState } from "react";
 import axios from "axios";
 
 // Define API URL
-const API_URL = "http://localhost:5000"; 
+const API_URL = "https://tyde-home.onrender.com"; 
 
 // Create Context
 const CrudContext = createContext();

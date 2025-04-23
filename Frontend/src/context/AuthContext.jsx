@@ -4,7 +4,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 
 const api = axios.create({
-  baseURL: 'http://127.0.0.1:5000',
+  baseURL: 'https://tyde-home.onrender.com',
 
 });
 
@@ -20,7 +20,7 @@ export function AuthProvider({ children }) {
     const checkAuth = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await api.get('http://127.0.0.1:5000/check', {
+        const res = await api.get('https://tyde-home.onrender.com/check', {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -43,7 +43,7 @@ export function AuthProvider({ children }) {
       setLoading(true);
       setError(null);
       // This should redirect to your backend's Google auth endpoint
-      window.location.href = 'http://127.0.0.1:5000/auth/login/google';
+      window.location.href = 'https://tyde-home.onrender.com/auth/login/google';
     } catch (err) {
       setError('Failed to initiate Google login');
       toast.error('Failed to initiate Google login');

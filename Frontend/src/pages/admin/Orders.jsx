@@ -35,7 +35,7 @@ const Orders = () => {
       });
 
       const response = await fetch(
-        `http://127.0.0.1:5000/orders/admin-orders?${params.toString()}`,
+        `https://tyde-home.onrender.com/orders/admin-orders?${params.toString()}`,
         {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -63,7 +63,7 @@ const Orders = () => {
       ordersData.orders.forEach(async (order) => {
         try {
           const deliveryResponse = await fetch(
-            `http://127.0.0.1:5000/api/deliveries/order/${order.id}/status`,
+            `https://tyde-home.onrender.com/api/deliveries/order/${order.id}/status`,
             {
               headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -494,7 +494,7 @@ const OrderCard = ({
   const handlePaymentStatusChange = async (newStatus) => {
     try {
       setIsUpdatingPayment(true);
-      const response = await fetch(`http://127.0.0.1:5000/orders/${order.id}/payment-status`, {
+      const response = await fetch(`https://tyde-home.onrender.com/orders/${order.id}/payment-status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

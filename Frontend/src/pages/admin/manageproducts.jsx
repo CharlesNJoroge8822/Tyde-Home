@@ -70,7 +70,7 @@ const ManageProducts = () => {
       if (searchParams.max_price) params.append('max_price', searchParams.max_price);
       if (searchParams.in_stock) params.append('in_stock', 'true');
 
-      const response = await fetch(`http://127.0.0.1:5000/products?${params.toString()}`);
+      const response = await fetch(`https://tyde-home.onrender.com/products?${params.toString()}`);
       const data = await response.json();
       
       if (!response.ok) throw new Error(data.error || 'Failed to load products');
@@ -95,7 +95,7 @@ const ManageProducts = () => {
   // Fetch categories
   const fetchCategories = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:5000/products/categories');
+      const response = await fetch('https://tyde-home.onrender.com/products/categories');
       const data = await response.json();
       
       if (!response.ok) throw new Error(data.error || 'Failed to load categories');
@@ -114,7 +114,7 @@ const ManageProducts = () => {
   // Helper function to get image URL
   const getImageUrl = (url) => {
     if (!url) return fallbackImage;
-    return url.startsWith('http') ? url : `http://127.0.0.1:5000${url}`;
+    return url.startsWith('http') ? url : `https://tyde-home.onrender.com${url}`;
   };
 
   // Edit product - populate form
@@ -154,7 +154,7 @@ const ManageProducts = () => {
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://127.0.0.1:5000/products/${currentProduct.id}`, {
+      const response = await fetch(`https://tyde-home.onrender.com/products/${currentProduct.id}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
@@ -192,7 +192,7 @@ const ManageProducts = () => {
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://127.0.0.1:5000/products', {
+      const response = await fetch('https://tyde-home.onrender.com/products', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -239,7 +239,7 @@ const ManageProducts = () => {
       if (result.isConfirmed) {
         setLoading(true);
         const token = localStorage.getItem('token');
-        const response = await fetch(`http://127.0.0.1:5000/products/${productId}`, {
+        const response = await fetch(`https://tyde-home.onrender.com/products/${productId}`, {
           method: 'DELETE',
           headers: { 
             'Authorization': `Bearer ${token}`
@@ -282,7 +282,7 @@ const handleUploadImages = async (productId, files) => {
     // Add any additional data if needed by your backend
     formData.append('product_id', productId);
 
-    const response = await fetch(`http://127.0.0.1:5000/products/${productId}/images`, {
+    const response = await fetch(`https://tyde-home.onrender.com/products/${productId}/images`, {
       method: 'POST',
       headers: { 
         'Authorization': `Bearer ${token}`

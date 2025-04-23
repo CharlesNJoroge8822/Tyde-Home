@@ -17,7 +17,7 @@ const LoginPage = () => {
 
     const verifyToken = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/verify-token', {
+        const response = await axios.get('https://tyde-home.onrender.com/verify-token', {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -39,7 +39,7 @@ const LoginPage = () => {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:5000/login', {
+      const response = await axios.post('https://tyde-home.onrender.com/login', {
         email,
         password,
       });

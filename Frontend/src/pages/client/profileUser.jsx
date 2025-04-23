@@ -29,11 +29,11 @@ const Profile = () => {
       try {
         const token = localStorage.getItem('token');
         if (!token) {
-          navigate('http://127.0.0.1:5000/login');
+          navigate('https://tyde-home.onrender.com/login');
           return;
         }
 
-        const response = await fetch('http://127.0.0.1:5000/me', {
+        const response = await fetch('https://tyde-home.onrender.com/me', {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -67,7 +67,7 @@ const Profile = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://127.0.0.1:5000/update-profile', {
+      const response = await fetch('https://tyde-home.onrender.com/update-profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

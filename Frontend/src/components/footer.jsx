@@ -25,14 +25,14 @@ const Footer = () => {
           </h3>
           <p className="text-blue-200 font-medium max-w-2xl mx-auto italic text-lg">
             <span className="border-b-2 border-blue-500 pb-1">
-              Timeless fittings & sanitary elegance since 1985
+              Timeless fittings & sanitary elegance...
             </span>
           </p>
         </div>
 
         {/* Links and Contact */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-12">
-
+{/* 1985 */}
           {/* Contact Info */}
           <div className="text-center">
             <h4 className="text-2xl font-serif font-semibold text-blue-100 mb-5 pb-2 relative inline-block">

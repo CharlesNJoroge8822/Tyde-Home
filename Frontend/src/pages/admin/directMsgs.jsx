@@ -32,7 +32,7 @@ const AdminMessaging = () => {
       const token = localStorage.getItem('token'); // adjust if using a state manager like Redux or Context
       if (!token) throw new Error('Unauthorized: No token found');
   
-      const res = await axios.get('http://127.0.0.1:5000/admin/conversations', {
+      const res = await axios.get('https://tyde-home.onrender.com/admin/conversations', {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -57,7 +57,7 @@ const AdminMessaging = () => {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('Unauthorized: No token found');
   
-      const res = await axios.get(`http://127.0.0.1:5000/messages/admin/conversation/${userId}`, {
+      const res = await axios.get(`https://tyde-home.onrender.com/messages/admin/conversation/${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -89,7 +89,7 @@ const AdminMessaging = () => {
       const token = localStorage.getItem('token'); // grab your JWT token here
   
       const res = await axios.post(
-        'http://127.0.0.1:5000/messages',
+        'https://tyde-home.onrender.com/messages',
         {
           sender_id: currentUser.id,
           recipient_id: selectedConversation.user_id,

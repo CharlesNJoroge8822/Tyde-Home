@@ -56,12 +56,12 @@ const Items = () => {
         setLoading(true);
         
         // Fetch products
-        const productsResponse = await fetch('http://127.0.0.1:5000/products');
+        const productsResponse = await fetch('https://tyde-home.onrender.com/products');
         if (!productsResponse.ok) throw new Error('Failed to fetch products');
         const productsData = await productsResponse.json();
         
         // Fetch ads for grid
-        const gridAdsResponse = await fetch('http://127.0.0.1:5000/ads/random?limit=3');
+        const gridAdsResponse = await fetch('https://tyde-home.onrender.com/ads/random?limit=3');
         if (!gridAdsResponse.ok) throw new Error('Failed to fetch grid ads');
         const gridAdsData = await gridAdsResponse.json();
         
@@ -90,7 +90,7 @@ const Items = () => {
     setOrderCreated(false);
     
     try {
-      const response = await fetch('http://127.0.0.1:5000/ads/random?limit=2');
+      const response = await fetch('https://tyde-home.onrender.com/ads/random?limit=2');
       if (!response.ok) throw new Error('Failed to fetch modal ads');
       const data = await response.json();
       setModalAds(data);
@@ -159,7 +159,7 @@ const Items = () => {
         throw new Error('Please login to place an order');
       }
   
-      const response = await fetch('http://127.0.0.1:5000/orders/', {
+      const response = await fetch('https://tyde-home.onrender.com/orders/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -242,7 +242,7 @@ const Items = () => {
   // Get image URL with fallback
   const getImageUrl = (url) => {
     if (!url) return fallbackImage;
-    return url.startsWith('http') ? url : `http://127.0.0.1:5000${url}`;
+    return url.startsWith('http') ? url : `https://tyde-home.onrender.com${url}`;
   };
 
   // Get stock status
