@@ -14,7 +14,7 @@ export const UserProvider = ({ children }) => {
         console.log("Payload", JSON.stringify(userData, null, 3));
         try {
             // Send POST request to Flask backend
-            const resp = await fetch("hhttps://tyde-home.onrender.com/register", {
+            const resp = await fetch("https://tyde-home.onrender.com/register", {
                 method: "POST",
                 credentials : "include",
                 headers: { "Content-Type": "application/json" }, // Send JSON data
@@ -40,7 +40,7 @@ export const UserProvider = ({ children }) => {
     //! Fetch all users
     const fetchUsers = async () => {
         try {
-            const response = await fetch("hhttps://tyde-home.onrender.com/");
+            const response = await fetch("https://tyde-home.onrender.com/");
             const data = await response.json();
 
             if (!response.ok) {
@@ -58,7 +58,7 @@ export const UserProvider = ({ children }) => {
     //! Fetch a single user by ID
     const fetchUser = async (userId) => {
         try {
-            const response = await fetch(`hhttps://tyde-home.onrender.com/users/${userId}`);
+            const response = await fetch(`https://tyde-home.onrender.com/users/${userId}`);
             const data = await response.json();
 
             if (!response.ok) {
@@ -74,7 +74,7 @@ export const UserProvider = ({ children }) => {
     //! Update user by ID (Like Flask `update_user`)
     const updateUser = async (userId, userData) => {
         try {
-            const resp = await fetch(`hhttps://tyde-home.onrender.com/users/${userId}`, {
+            const resp = await fetch(`https://tyde-home.onrender.com/users/${userId}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" }, // Send JSON data
                 body: JSON.stringify(userData),
@@ -102,7 +102,7 @@ export const UserProvider = ({ children }) => {
     //! Delete user by ID (Like Flask `delete_user`)
     const deleteUser = async (userId) => {
         try {
-            const response = await fetch(`hhttps://tyde-home.onrender.com/users/${userId}`, {
+            const response = await fetch(`https://tyde-home.onrender.com/users/${userId}`, {
                 method: "DELETE",
             });
 
