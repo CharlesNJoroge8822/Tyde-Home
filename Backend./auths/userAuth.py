@@ -64,7 +64,8 @@ def register():
         token = jwt.encode({
             'user_id': new_user.id,
             'exp': datetime.datetime.utcnow() + datetime.timedelta(days=30)
-        }, SECRET_KEY).decode('utf-8')
+        }, SECRET_KEY, algorithm='HS256')
+
         
         return jsonify({
             'message': 'User registered successfully!',
