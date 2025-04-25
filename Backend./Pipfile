@@ -14,8 +14,8 @@ oauthlib = "*"
 flask = "==2.3.3"
 gunicorn = "*"
 psycopg2-binary = "*"
+pyjwt = "==2.8.0"
 flask-jwt-extended = "==4.4.4"
-pyjwt = "==2.9.0"
 
 [dev-packages]
 

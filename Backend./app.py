@@ -44,7 +44,11 @@ def create_app():
     # ===================
     # Initialize Extensions
     # ===================
-    cors.init_app(app, resources={r"/*": {"origins": "https://tyde-home.vercel.app"}})
+    cors.init_app(
+        app,
+        resources={r"/*": {"origins": "https://tyde-home.vercel.app"}},
+        supports_credentials=True  # 👈 Critical for cookies/auth headers
+    )    
     db.init_app(app)
     migrate.init_app(app, db)
     mail.init_app(app)
