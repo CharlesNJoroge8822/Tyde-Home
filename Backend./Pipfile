@@ -15,7 +15,7 @@ flask = "==2.3.3"
 gunicorn = "*"
 psycopg2-binary = "*"
 flask-jwt-extended = "==4.4.4"
-pyjwt = "<3.0,>=2.0"
+pyjwt = "==2.9.0"
 
 [dev-packages]
 
