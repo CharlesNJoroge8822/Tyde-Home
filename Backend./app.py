@@ -24,7 +24,10 @@ def create_app():
     # ================
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-here')
     app.config['DEBUG'] = os.environ.get('DEBUG', 'False') == 'True'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'your-database-uri'
+    
+    # Use your actual PostgreSQL URI here
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://tydehomesandsanitarywares_pb7i_user:VUy3x8DnTeHAd6CgL3KCyStPu1mgODzs@dpg-d05q6l9r0fns73ejugu0-a.oregon-postgres.render.com/tydehomesandsanitarywares_pb7i'
+    
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', app.config['SECRET_KEY'])
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
@@ -115,4 +118,3 @@ app = create_app()
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))  # required by Render
     app.run(host="0.0.0.0", port=port)
-
