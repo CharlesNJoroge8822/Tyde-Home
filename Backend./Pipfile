@@ -11,11 +11,11 @@ flask-login = "*"
 flask-mail = "*"
 requests = "*"
 oauthlib = "*"
-flask = "*"
+flask = "==2.3.3"
 gunicorn = "*"
 psycopg2-binary = "*"
-flask-jwt-extended = "==3.25.1"
-PyJWT = "==1.7.1"
+flask-jwt-extended = "==4.4.4"
+pyjwt = "<3.0,>=2.0"
 
 [dev-packages]
 
