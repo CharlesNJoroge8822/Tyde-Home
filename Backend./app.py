@@ -8,6 +8,8 @@ import os
 from datetime import timedelta
 from werkzeug.utils import secure_filename
 from flask_cors import cross_origin
+from dotenv import load_dotenv
+
 
 # Initialize extensions
 db = SQLAlchemy()
@@ -53,6 +55,8 @@ def create_app():
     migrate.init_app(app, db)
     mail.init_app(app)
     jwt.init_app(app)
+    
+    load_dotenv()
     
     # ===================
     # Register Blueprints

@@ -27,6 +27,7 @@ packaging==25.0
 psycopg2-binary==2.9.10
 pycparser==2.22
 PyJWT==2.8.0
+python-dotenv==1.0.1
 requests==2.32.3
 six==1.17.0
 SQLAlchemy==2.0.40
