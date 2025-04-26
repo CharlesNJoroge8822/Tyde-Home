@@ -16,6 +16,7 @@ gunicorn = "*"
 psycopg2-binary = "*"
 pyjwt = "==2.8.0"
 flask-jwt-extended = "==4.4.4"
+cloudinary = "*"
 
 [dev-packages]
 
