@@ -240,6 +240,7 @@ const Orders = () => {
       </div>
     );
   }
+// Shipping Address
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
@@ -758,28 +759,20 @@ const OrderCard = ({
           {/* Delivery Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Shipping Address */}
-            <div>
-              <h4 className="text-md font-medium text-gray-900 mb-4">Shipping Address</h4>
-              <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-                <div className="flex items-start">
-                  <FiMapPin className="mt-1 mr-3 text-gray-500 flex-shrink-0" />
-                  <div>
-                    <p className="font-medium text-gray-900">{order.shipping_address?.recipient_name || 'Not specified'}</p>
-                    <p className="text-sm text-gray-500">
-                      {order.shipping_address?.line1}<br />
-                      {order.shipping_address?.line2 && <>{order.shipping_address.line2}<br /></>}
-                      {order.shipping_address?.city}, {order.shipping_address?.state} {order.shipping_address?.postal_code}<br />
-                      {order.shipping_address?.country}
-                    </p>
-                    <p className="mt-2 text-sm text-gray-500">
-                      <FiPhone className="inline mr-1" />
-                      {order.shipping_address?.phone || 'No phone provided'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
+<div>
+  <h4 className="text-md font-medium text-gray-900 mb-4">Shipping Address</h4>
+  <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+    <div className="flex items-start">
+      <FiMapPin className="mt-1 mr-3 text-gray-500 flex-shrink-0" />
+      <div>
+        <p className="text-sm text-gray-500">
+          {order.user?.address || 'Address not provided'}
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+         
             {/* Delivery Details */}
             <div>
               <h4 className="text-md font-medium text-gray-900 mb-4">Delivery Details</h4>
