@@ -3,7 +3,7 @@ from models import Order, OrderItem, Product, db, DeliveryUpdate
 from datetime import datetime, timedelta
 from sqlalchemy.exc import SQLAlchemyError
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from cloudinary_config import cloudinary
+from cloudinary_config import get_cloudinary_url
 
 order_bp = Blueprint("orders", __name__, url_prefix="/orders")
 
@@ -295,7 +295,6 @@ def get_all_orders():
         return error_response(str(e), 500)
 
 
-
 @order_bp.route("/my-orders", methods=["GET"])
 @jwt_required()
 def get_current_user_orders():
@@ -322,22 +321,44 @@ def get_current_user_orders():
                 "delivery_updates": []
             }
 
-            # Add order items with Cloudinary URLs for images
+            # Add order items with optimized Cloudinary URLs
             for item in order.order_items:
-                image_url = None
-                if item.product and item.product.primary_image:
-                    # Generate the Cloudinary URL for the image
-                    image_url, _ = cloudinary_url(item.product.primary_image, secure=True)
+                if item.product:
+                    # Generate different image sizes for different use cases
+                    image_url = get_cloudinary_url(
+                        item.product.primary_image,
+                        width=600,
+                        height=600
+                    )
+                    thumbnail_url = get_cloudinary_url(
+                        item.product.primary_image,
+                        width=150,
+                        height=150,
+                        crop='thumb'
+                    )
 
-                order_data["order_items"].append({
-                    "id": item.id,
-                    "product_id": item.product_id,
-                    "product_name": item.product.name if item.product else "Unknown Product",
-                    "sku": item.product.sku if item.product else "N/A",
-                    "quantity": item.quantity,
-                    "price_at_purchase": float(item.price_at_purchase) if item.price_at_purchase else 0.0,
-                    "image": image_url  # Use Cloudinary URL for the image
-                })
+                    order_data["order_items"].append({
+                        "id": item.id,
+                        "product_id": item.product_id,
+                        "product_name": item.product.name,
+                        "sku": item.product.sku if item.product.sku else "N/A",
+                        "quantity": item.quantity,
+                        "price_at_purchase": float(item.price_at_purchase) if item.price_at_purchase else 0.0,
+                        "image": image_url,  # Medium size for detail view
+                        "thumbnail": thumbnail_url  # Small size for lists
+                    })
+                else:
+                    # Handle case where product might be deleted
+                    order_data["order_items"].append({
+                        "id": item.id,
+                        "product_id": item.product_id,
+                        "product_name": "Unknown Product",
+                        "sku": "N/A",
+                        "quantity": item.quantity,
+                        "price_at_purchase": float(item.price_at_purchase) if item.price_at_purchase else 0.0,
+                        "image": None,
+                        "thumbnail": None
+                    })
 
             # Add delivery updates
             for update in order.delivery_updates:
@@ -363,7 +384,6 @@ def get_current_user_orders():
 
     except Exception as e:
         return error_response(str(e), 500)
-    
     
     # admin enpoint to fetch each user orders
 @order_bp.route("/admin-orders", methods=["GET"])
