@@ -437,7 +437,8 @@ def get_all_orders_for_admin():
                     "id": user.id if user else None,
                     "name": getattr(user, 'name', 'Unknown Customer'),
                     "email": getattr(user, 'email', None),
-                    "phone": getattr(user, 'phone', None)
+                    "phone": getattr(user, 'phone', None),
+                    "address" : getattr(user, 'address', None)
 
                 },
                 "order_items": [],
