@@ -3,7 +3,7 @@ from models import Order, OrderItem, Product, db, DeliveryUpdate
 from datetime import datetime, timedelta
 from sqlalchemy.exc import SQLAlchemyError
 from flask_jwt_extended import jwt_required, get_jwt_identity
-
+from cloudinary_config import cloudinary
 
 order_bp = Blueprint("orders", __name__, url_prefix="/orders")
 
@@ -295,6 +295,7 @@ def get_all_orders():
         return error_response(str(e), 500)
 
 
+
 @order_bp.route("/my-orders", methods=["GET"])
 @jwt_required()
 def get_current_user_orders():
@@ -321,8 +322,13 @@ def get_current_user_orders():
                 "delivery_updates": []
             }
 
-            # Add order items
+            # Add order items with Cloudinary URLs for images
             for item in order.order_items:
+                image_url = None
+                if item.product and item.product.primary_image:
+                    # Generate the Cloudinary URL for the image
+                    image_url, _ = cloudinary_url(item.product.primary_image, secure=True)
+
                 order_data["order_items"].append({
                     "id": item.id,
                     "product_id": item.product_id,
@@ -330,7 +336,7 @@ def get_current_user_orders():
                     "sku": item.product.sku if item.product else "N/A",
                     "quantity": item.quantity,
                     "price_at_purchase": float(item.price_at_purchase) if item.price_at_purchase else 0.0,
-                    "image": item.product.primary_image if item.product and item.product.primary_image else None
+                    "image": image_url  # Use Cloudinary URL for the image
                 })
 
             # Add delivery updates
@@ -357,8 +363,8 @@ def get_current_user_orders():
 
     except Exception as e:
         return error_response(str(e), 500)
-
-
+    
+    
     # admin enpoint to fetch each user orders
 @order_bp.route("/admin-orders", methods=["GET"])
 @jwt_required()
