@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import LazyLoad from 'react-lazyload';
 import {
   FaShoppingCart,
   FaShieldAlt,
@@ -39,7 +40,7 @@ import { GiMetalBar, GiValve, GiWaterDrop } from "react-icons/gi";
 import { IoIosArrowForward } from "react-icons/io";
 import { Link } from "react-router-dom";
 import Slider from "react-slick";
-
+import { FaExclamationTriangle } from "react-icons/fa";
 
 const Landing = () => {
   const [showNumber, setShowNumber] = useState(false);
@@ -1199,7 +1200,14 @@ const CategoryModal = ({ category, onClose }) => {
       {category.name} Collection
     </h3>
     <p className="text-blue-600/80 text-sm mt-1 font-light italic">Curated with timeless elegance</p>
+    <div className="mb-6">
+  <div className="flex items-center gap-3 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 px-4 py-3 rounded-md shadow-sm animate-pulse">
+    <FaExclamationTriangle className="text-xl" />
+    <p className="text-sm font-semibold">
+      If images don't show, please reload the page to load images properly.
+    </p>
   </div>
+</div>  </div>
   <button 
     onClick={(e) => {
       e.stopPropagation();
@@ -1211,82 +1219,83 @@ const CategoryModal = ({ category, onClose }) => {
     <FaTimes />
   </button>
 </div>
-
 {/* Modal Content - Gallery View */}
 <div className="p-8 bg-blue-50 min-h-screen">
   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
     {category.items.map((item, index) => (
-      <div 
-        key={item.id} 
-        className="bg-white border border-blue-100 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.05)] overflow-hidden transition-all duration-300 hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)] hover:-translate-y-1"
-      >
+      <LazyLoad key={item.id} height={300} offset={100} once>
         <div 
-          className="relative h-90 overflow-hidden cursor-zoom-in group"
-          onClick={() => openZoomedView(item.image, index)}
+          className="bg-white border border-blue-100 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.05)] overflow-hidden transition-all duration-300 hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)] hover:-translate-y-1"
         >
-          <img 
-            src={item.image} 
-            alt={item.name}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-blue-900/50 via-blue-900/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6">
-            <span className="text-white font-medium text-sm bg-blue-900/60 px-3 py-1.5 rounded-full border border-blue-300/30">
-              Click to enlarge
-            </span>
-          </div>
-          <div className="absolute top-4 right-4 bg-blue-900/80 text-white text-xs px-2 py-1 rounded-full border border-blue-300/30 hidden group-hover:block animate-fade-in">
-            View Image
-          </div>
-        </div>
-        <div className="p-6 border-t border-blue-50">
-          <h4 className="text-xl font-serif font-medium text-blue-900 mb-2">{item.name}</h4>
-          <p className="text-blue-700/80 text-sm mb-4 leading-relaxed font-light">{item.description}</p>
-          <div className="flex flex-wrap gap-2 mb-4">
-            {item.specs.map((spec, i) => (
-              <span key={i} className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full border border-blue-200">
-                {spec}
+          <div 
+            className="relative h-90 overflow-hidden cursor-zoom-in group"
+            onClick={() => openZoomedView(item.image, index)}
+          >
+            <img 
+              src={item.image} 
+              alt={item.name}
+              loading="lazy"
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-blue-900/50 via-blue-900/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6">
+              <span className="text-white font-medium text-sm bg-blue-900/60 px-3 py-1.5 rounded-full border border-blue-300/30">
+                Click to enlarge
               </span>
-            ))}
+            </div>
+            <div className="absolute top-4 right-4 bg-blue-900/80 text-white text-xs px-2 py-1 rounded-full border border-blue-300/30 hidden group-hover:block animate-fade-in">
+              View Image
+            </div>
           </div>
-          <div className="flex justify-between items-center pt-4 border-t border-blue-50">
-            <span className="text-lg font-serif font-medium text-blue-900">{item.price}</span>
-            <button className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1 transition-colors">
-            <div className="flex gap-3 mt-2">
-  {/* WhatsApp Button */}
-  <a
-    href={`https://wa.me/254746623859?text=Hi, I'm interested in the ${item.name} (${item.specs.join(", ")}) priced at ${item.price}`}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="flex items-center gap-1 text-white bg-green-600 hover:bg-green-700 border border-green-700 px-3 py-1.5 rounded-md text-xs font-medium shadow-sm hover:shadow-md transition-all duration-200"
-  >
-    <FaWhatsapp className="text-base" />
-    WhatsApp
-  </a>
 
-  {/* Create Account & Order Button */}
-  <a
-    href="/register"
-    className="flex items-center gap-1 text-white bg-blue-600 hover:bg-blue-700 border border-blue-700 px-3 py-1.5 rounded-md text-xs font-medium shadow-sm hover:shadow-md transition-all duration-200"
-  >
-    <FaUserPlus className="text-base" />
-    Create Account
-  </a>
-</div>
+          <div className="p-6 border-t border-blue-50">
+            <h4 className="text-xl font-serif font-medium text-blue-900 mb-2">{item.name}</h4>
+            <p className="text-blue-700/80 text-sm mb-4 leading-relaxed font-light">{item.description}</p>
 
+            <div className="flex flex-wrap gap-2 mb-4">
+              {item.specs.map((spec, i) => (
+                <span key={i} className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full border border-blue-200">
+                  {spec}
+                </span>
+              ))}
+            </div>
 
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </button>
+            <div className="flex justify-between items-center pt-4 border-t border-blue-50">
+              <span className="text-lg font-serif font-medium text-blue-900">{item.price}</span>
 
-            
+              <button className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1 transition-colors">
+                <div className="flex gap-3 mt-2">
+                  {/* WhatsApp Button */}
+                  <a
+                    href={`https://wa.me/254746623859?text=Hi, I'm interested in the ${item.name} (${item.specs.join(", ")}) priced at ${item.price}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-white bg-green-600 hover:bg-green-700 border border-green-700 px-3 py-1.5 rounded-md text-xs font-medium shadow-sm hover:shadow-md transition-all duration-200"
+                  >
+                    <FaWhatsapp className="text-base" />
+                    WhatsApp
+                  </a>
+{/* Curated with timeless elegance */}
+                  {/* Create Account Button */}
+                  <a
+                    href="/register"
+                    className="flex items-center gap-1 text-white bg-blue-600 hover:bg-blue-700 border border-blue-700 px-3 py-1.5 rounded-md text-xs font-medium shadow-sm hover:shadow-md transition-all duration-200"
+                  >
+                    <FaUserPlus className="text-base" />
+                    Create Account
+                  </a>
+                </div>
+
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </LazyLoad>
     ))}
   </div>
 </div>
-
     
     {/* Modal Footer */}
     <div className="sticky bottom-0 bg-white/80 backdrop-blur-md border-t border-gray-200/50 p-4 flex justify-between items-center">
@@ -1643,7 +1652,10 @@ const CategoryModal = ({ category, onClose }) => {
               A glimpse into our world-class infrastructure and processes
             </p>
           </div>
-          
+          {/* Curated with timeless elegance
+
+
+ */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {galleryImages.map((image) => (
               <div key={image.id} className="group relative overflow-hidden rounded-lg shadow-lg h-64">
