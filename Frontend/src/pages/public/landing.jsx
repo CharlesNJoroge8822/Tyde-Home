@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import LazyLoad from 'react-lazyload';
 import {
-  FaShoppingCart,
+  FaArrowDown,
   FaShieldAlt,
   FaTruck,
   FaStar,
@@ -59,7 +59,7 @@ const Landing = () => {
     arrows: false,
   };
 
-  // Dedicated technical team
+  // Browse catalog
 
   const homeCategories = [
     {
@@ -1421,7 +1421,7 @@ const CategoryModal = ({ category, onClose }) => {
     <div className="flex flex-col md:flex-row gap-4 justify-center items-center">
       {/* Catalog Button */}
       <button className="bg-blue-800 hover:bg-blue-500 text-blue-300 font-bold py-4 px-10 rounded-lg text-lg transition-all duration-300 transform hover:scale-105 flex items-center gap-2 shadow-lg">
-        <FaShoppingCart /> Browse Catalog
+        <FaArrowDown /> Browse Catalog
       </button>
 
       {/* WhatsApp Order Button */}

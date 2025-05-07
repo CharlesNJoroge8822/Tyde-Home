@@ -399,7 +399,7 @@ const MyOrders = () => {
                             {order.estimated_delivery ? formatDate(order.estimated_delivery) : 'Calculating...'}
                           </span>
                         </div>
-                        {order.estimated_delivery && (
+                        {/* {order.estimated_delivery && (
                           <div className="flex justify-between">
                             <span className="text-sm text-gray-500">Delivery Status</span>
                             <span className={`text-xs font-medium ${
@@ -420,7 +420,7 @@ const MyOrders = () => {
                               )}
                             </span>
                           </div>
-                        )}
+                        )} */}
                         <div className="flex justify-between">
                           <span className="text-sm text-gray-500">Shipping Address</span>
                           <span className="text-sm font-medium text-gray-900 text-right">
@@ -474,6 +474,7 @@ const MyOrders = () => {
                                       </p>
                                       <time className="text-sm text-gray-500">
                                         {formatDate(update.updated_at)}
+                                        {/* Delayed */}
                                       </time>
                                     </div>
                                     {update.notes && (
