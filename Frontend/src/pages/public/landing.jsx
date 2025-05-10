@@ -1203,7 +1203,7 @@ const Landing = () => {
               </div>
             </div>
           </div>
-      
+      {/* Our products have powered */}
           <div className="mt-10 bg-gray-50 p-6 rounded-xl border border-gray-200">
             <h4 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
               <FaMapMarkerAlt className="h-6 w-6 mr-2 text-blue-700" />
@@ -1563,9 +1563,9 @@ const Landing = () => {
             Tyde Home Fittings and Sanitary Wares is a local business founded by Tyde, offering a range of home fittings and sanitary wares. We serve the local community through our physical shop in Kitengela and our online website, making it easy for customers to shop how they prefer.
 
             </p>
-            <p className="text-lg text-gray-700 mb-8 leading-relaxed">
+            {/* <p className="text-lg text-gray-700 mb-8 leading-relaxed">
               Our products have powered Kenya's industrial growth for four decades, from the first oil pipelines to modern geothermal plants.
-            </p>
+            </p> */}
 {/* Years Experience
  */}
             <button
