@@ -372,7 +372,7 @@ const MyOrders = () => {
                         </div>
                       </div>
                     </div>
-
+                    {/* Timeline */}
                     {/* Shipping Information */}
                     <div className="space-y-4">
                       <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Shipping</h4>
